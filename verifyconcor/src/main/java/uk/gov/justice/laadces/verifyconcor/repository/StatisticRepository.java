@@ -1,7 +1,7 @@
 package uk.gov.justice.laadces.verifyconcor.repository;
 
 import lombok.Data;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -14,7 +14,7 @@ import java.util.Map;
  * <p>
  * Not currently implemented.
  */
-@Component
+@Service
 public class StatisticRepository {
     private final static String[] STATUSES = {"ACTIVE", "REPLACED", "SENT"};
 

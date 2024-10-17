@@ -1,7 +1,7 @@
 package uk.gov.justice.laadces.verifyconcor.repository;
 
 import lombok.Getter;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +11,8 @@ import java.util.List;
  * <p>
  * This is a Spring component so it can be injected into other classes.
  */
-@Component
 @Getter
+@Service
 public class AnomalyRepository {
     private List<Anomaly> diffs;
     private List<Anomaly> violations;

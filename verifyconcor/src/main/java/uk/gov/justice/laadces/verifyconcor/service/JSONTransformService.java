@@ -3,14 +3,14 @@ package uk.gov.justice.laadces.verifyconcor.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import uk.gov.justice.laadces.verifyconcor.generated.CONTRIBUTIONS;
 
 /**
- * Service to transform between JSON and DTO.
+ * Service to transform a Concor Contribution DTO to and from JSON.
  */
-@Component
 @RequiredArgsConstructor
+@Service
 public class JSONTransformService {
     private final ObjectMapper objectMapper;
 

@@ -4,16 +4,16 @@ import com.networknt.schema.InputFormat;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.ValidationMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
 
 /**
- * Service to validate JSON against a schema.
+ * Service to validate Concor Contribution JSON against the Concor Contribution JSON schema.
  */
-@Component
 @RequiredArgsConstructor
+@Service
 public class JSONValidationService {
     private final JsonSchema jsonSchema;
 

@@ -1,6 +1,6 @@
 package uk.gov.justice.laadces.verifyconcor.service;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.w3c.dom.Node;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.diff.Comparison;
@@ -14,9 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Service to compare two XML strings (as XML documents rather than just textual strings).
+ * Service to compare Concor Contribution XML (as XML documents rather than just textual strings).
  */
-@Component
+@Service
 public class XMLComparisonService {
     public List<String> compareXML(final String xml1, final String xml2) {
         Diff diff = DiffBuilder.compare(xml1).withTest(xml2).checkForIdentical()

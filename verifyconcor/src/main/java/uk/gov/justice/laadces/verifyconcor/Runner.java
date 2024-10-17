@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,7 @@ import java.util.List;
  * ApplicationRunner class that examines the data in the database.
  */
 @Component
+@Profile("!test")
 @RequiredArgsConstructor
 @Slf4j
 class Runner implements ApplicationRunner {
@@ -50,22 +52,17 @@ class Runner implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         final int recs = concorRepository.countByIdBetween(LOW_ID, HIGH_ID);
         log.info("There are {} rows with {} <= id <= {}", recs, LOW_ID, HIGH_ID);
+        log.info("-----BEGIN-----");
+        final long startTime = System.currentTimeMillis();
+
         long nextLowId = LOW_ID;
         int recsLoaded = 0;
-        log.info("-----BEGIN-----");
-        final long t0 = System.currentTimeMillis();
+        Slice<ConcorContribution> slice;
+        List<ConcorContribution> content;
+        int contentLen;
+        long sliceLowId, sliceHighId;
 
-        Slice<ConcorContribution> slice = concorRepository.findByIdBetweenOrderById(nextLowId, HIGH_ID, Pageable.ofSize(BATCH_SIZE));
-        List<ConcorContribution> content = slice.getContent();
-        int contentLen = content.size();
-        recsLoaded += contentLen;
-        long sliceLowId = contentLen > 0 ? content.get(0).id() : nextLowId;
-        long sliceHighId = contentLen > 0 ? content.get(contentLen - 1).id() : HIGH_ID;
-        nextLowId = sliceHighId + 1;
-        log.info("Loaded {} rows with {} <= id <= {}, {} / {} rows loaded, {} ms", contentLen, sliceLowId, sliceHighId, recsLoaded, recs, System.currentTimeMillis() - t0);
-        content.forEach(this::examineConcorContribution);
-
-        while (slice.hasNext() && contentLen > 0 && nextLowId <= HIGH_ID) {
+        do {
             slice = concorRepository.findByIdBetweenOrderById(nextLowId, HIGH_ID, Pageable.ofSize(BATCH_SIZE));
             content = slice.getContent();
             contentLen = content.size();
@@ -73,13 +70,13 @@ class Runner implements ApplicationRunner {
             sliceLowId = contentLen > 0 ? content.get(0).id() : nextLowId;
             sliceHighId = contentLen > 0 ? content.get(contentLen - 1).id() : HIGH_ID;
             nextLowId = sliceHighId + 1;
-            log.info("Loaded {} rows with {} <= id <= {}. {} / {} rows loaded, {} ms", contentLen, sliceLowId, sliceHighId, recsLoaded, recs, System.currentTimeMillis() - t0);
-            slice.getContent().forEach(this::examineConcorContribution);
-        }
+            log.info("Loaded {} rows with {} <= id <= {}. {} / {} rows loaded, {} ms", contentLen, sliceLowId, sliceHighId, recsLoaded, recs, System.currentTimeMillis() - startTime);
+            content.forEach(this::examineConcorContribution);
+        } while (slice.hasNext() && contentLen > 0 && nextLowId <= HIGH_ID);
 
-        final long td = System.currentTimeMillis() - t0;
+        final long timeTaken = System.currentTimeMillis() - startTime;
         log.info("-----END-----");
-        log.info("Completed {} / {} rows, {} ms = {} ms / rec", recsLoaded, recs, td, 1.0 * td / recsLoaded);
+        log.info("Completed {} / {} rows, {} ms = {} ms / rec", recsLoaded, recs, timeTaken, 1.0 * timeTaken / recsLoaded);
         log.info("    Found {} diff anomalies", anomalyRepository.getDiffs().size());
         log.info("    Found {} violations", anomalyRepository.getViolations().size());
         log.info(statisticRepository.toString());

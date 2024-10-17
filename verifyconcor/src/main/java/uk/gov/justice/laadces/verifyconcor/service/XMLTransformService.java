@@ -5,7 +5,7 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import uk.gov.justice.laadces.verifyconcor.generated.CONTRIBUTIONS;
 
 import javax.xml.namespace.QName;
@@ -14,10 +14,10 @@ import java.io.StringReader;
 import java.io.StringWriter;
 
 /**
- * Service to transform between XML and DTO.
+ * Service to transform a Concor Contribution DTO to and from XML.
  */
-@Component
 @RequiredArgsConstructor
+@Service
 public class XMLTransformService {
     private static final QName _CONTRIBUTIONS_QNAME = new QName("", "CONTRIBUTIONS");
     private final Unmarshaller unmarshaller;

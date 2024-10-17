@@ -78,7 +78,7 @@ class JsonConfiguration {
     }
 
     /**
-     * Array of classes to apply the NonNullMixIn MixIn to. See `jsonCustomizer()` method.
+     * Array of Concor Contribution classes to apply the NonNullMixIn MixIn to. See `jsonCustomizer()` method.
      */
     private static final Class<?>[] NON_NULL_CLASSES = {
             CONTRIBUTIONS.class,
@@ -120,7 +120,7 @@ class JsonConfiguration {
     };
 
     /**
-     * JSON Schema bean used to validate the transformed JSON.
+     * Concor Contribution JSON Schema bean used to validate the transformed Concor Contribution JSON.
      */
     @Bean
     JsonSchema jsonSchema() {

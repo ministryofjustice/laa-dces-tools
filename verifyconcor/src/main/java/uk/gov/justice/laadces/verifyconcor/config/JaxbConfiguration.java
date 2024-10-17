@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import uk.gov.justice.laadces.verifyconcor.generated.CONTRIBUTIONS;
 
 /**
- * JAXB configuration for the XML transformation.
+ * JAXB configuration for the Concor Contribution XML transformation.
  */
 @Configuration
 class JaxbConfiguration {
