@@ -37,7 +37,7 @@ class Runner implements ApplicationRunner {
     private final XMLComparisonService xmlComparisonService;
     private final XMLTransformService xmlTransformService;
 
-    private static final long LOW_ID = 300_000_000L;
+    private static final long LOW_ID = 298_739_928L; // First rec of 2020
     private static final long HIGH_ID = 499_999_999L;
     private static final int BATCH_SIZE = 1000;
 
