@@ -1,0 +1,4 @@
+# The following stops the ApplicationRunner bean from running during unit tests.
+spring:
+  profiles:
+    active: test
