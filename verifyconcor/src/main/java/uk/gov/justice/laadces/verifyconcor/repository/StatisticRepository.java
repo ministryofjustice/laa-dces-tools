@@ -30,8 +30,12 @@ public class StatisticRepository {
 
     public void clear() {
         prev = LocalDate.of(1970, 1, 1);
-        currRecsPerDay = minRecsPerDay = maxRecsPerDay = totalRecsPerDay = 0;
-        currSizePerDay = minSizePerDay = maxSizePerDay = totalSizePerDay = 0L;
+        minRecsPerDay = Integer.MAX_VALUE;
+        maxRecsPerDay = Integer.MIN_VALUE;
+        currRecsPerDay = totalRecsPerDay = 0;
+        minSizePerDay = Long.MAX_VALUE;
+        maxSizePerDay = Long.MIN_VALUE;
+        currSizePerDay = totalSizePerDay = 0L;
         totals = new GroupStat();
     }
 
@@ -60,14 +64,12 @@ public class StatisticRepository {
             ++totStat.days;
             ++dayStat.days;
             ++monStat.days;
-            ++stsStat.days;
         } else if (curr.isBefore(prev)) {
             endDay();
             prev = curr;
             ++totStat.backs;
             ++dayStat.backs;
             ++monStat.backs;
-            ++stsStat.backs;
         }
         ++totStat.recs;
         ++dayStat.recs;
