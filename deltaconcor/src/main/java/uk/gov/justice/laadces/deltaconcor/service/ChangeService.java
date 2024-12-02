@@ -1,63 +1,245 @@
-package uk.gov.justice.laadces.deltaconcor.report;
+package uk.gov.justice.laadces.deltaconcor.service;
 
 import org.springframework.stereotype.Component;
 import uk.gov.justice.laadces.deltaconcor.generated.CONTRIBUTIONS;
+import uk.gov.justice.laadces.deltaconcor.report.Change;
 
 import java.util.List;
 import java.util.Objects;
 
 /**
- * This class has a set of methods for updating a ConcorChangeCounts instance based on the
- * differences between two CONTRIBUTIONS instances.
+ * This class has a set of methods for updating Change instances based on the differences between two CONTRIBUTIONS
+ * instances, or for combining multiple Change instances into a single Change instance by addition.
  * <p>
  * Note this is a concrete utility class, and has no relationship to the JRE Comparator or Comparable interfaces.
  */
 @Component
-public class ConcorComparison {
+public class ChangeService {
+    /**
+     * Adds the counts in `other` to the counts in `change`.
+     * @param change Change counts to add `other` to (i.e. will contain the result).
+     * @param other Change counts to be added to `change` (i.e. remains unchanged).
+     */
+    public void addTo(Change change, Change other) {
+        change.setSentRecords(change.getSentRecords() + other.getSentRecords());
+        change.setChangedRecords(change.getChangedRecords() + other.getChangedRecords());
+
+        change.setApplicant(change.getApplicant() + other.getApplicant());
+        change.setApplicant_firstName(change.getApplicant_firstName() + other.getApplicant_firstName());
+        change.setApplicant_lastName(change.getApplicant_lastName() + other.getApplicant_lastName());
+        change.setApplicant_dob(change.getApplicant_dob() + other.getApplicant_dob());
+        change.setApplicant_niNumber(change.getApplicant_niNumber() + other.getApplicant_niNumber());
+        change.setApplicant_landline(change.getApplicant_landline() + other.getApplicant_landline());
+        change.setApplicant_mobile(change.getApplicant_mobile() + other.getApplicant_mobile());
+        change.setApplicant_email(change.getApplicant_email() + other.getApplicant_email());
+        change.setApplicant_preferredPaymentDay(change.getApplicant_preferredPaymentDay() + other.getApplicant_preferredPaymentDay());
+        change.setApplicant_preferredPaymentMethod(change.getApplicant_preferredPaymentMethod() + other.getApplicant_preferredPaymentMethod());
+        change.setApplicant_preferredPaymentMethod_code(change.getApplicant_preferredPaymentMethod_code() + other.getApplicant_preferredPaymentMethod_code());
+        change.setApplicant_preferredPaymentMethod_description(change.getApplicant_preferredPaymentMethod_description() + other.getApplicant_preferredPaymentMethod_description());
+        change.setApplicant_noFixedAbode(change.getApplicant_noFixedAbode() + other.getApplicant_noFixedAbode());
+        change.setApplicant_specialInvestigation(change.getApplicant_specialInvestigation() + other.getApplicant_specialInvestigation());
+        change.setApplicant_homeAddress(change.getApplicant_homeAddress() + other.getApplicant_homeAddress());
+        change.setApplicant_homeAddress_detail(change.getApplicant_homeAddress_detail() + other.getApplicant_homeAddress_detail());
+        change.setApplicant_homeAddress_detail_line1(change.getApplicant_homeAddress_detail_line1() + other.getApplicant_homeAddress_detail_line1());
+        change.setApplicant_homeAddress_detail_line2(change.getApplicant_homeAddress_detail_line2() + other.getApplicant_homeAddress_detail_line2());
+        change.setApplicant_homeAddress_detail_line3(change.getApplicant_homeAddress_detail_line3() + other.getApplicant_homeAddress_detail_line3());
+        change.setApplicant_homeAddress_detail_city(change.getApplicant_homeAddress_detail_city() + other.getApplicant_homeAddress_detail_city());
+        change.setApplicant_homeAddress_detail_country(change.getApplicant_homeAddress_detail_country() + other.getApplicant_homeAddress_detail_country());
+        change.setApplicant_homeAddress_detail_postcode(change.getApplicant_homeAddress_detail_postcode() + other.getApplicant_homeAddress_detail_postcode());
+        change.setApplicant_postalAddress(change.getApplicant_postalAddress() + other.getApplicant_postalAddress());
+        change.setApplicant_postalAddress_detail(change.getApplicant_postalAddress_detail() + other.getApplicant_postalAddress_detail());
+        change.setApplicant_postalAddress_detail_line1(change.getApplicant_postalAddress_detail_line1() + other.getApplicant_postalAddress_detail_line1());
+        change.setApplicant_postalAddress_detail_line2(change.getApplicant_postalAddress_detail_line2() + other.getApplicant_postalAddress_detail_line2());
+        change.setApplicant_postalAddress_detail_line3(change.getApplicant_postalAddress_detail_line3() + other.getApplicant_postalAddress_detail_line3());
+        change.setApplicant_postalAddress_detail_city(change.getApplicant_postalAddress_detail_city() + other.getApplicant_postalAddress_detail_city());
+        change.setApplicant_postalAddress_detail_country(change.getApplicant_postalAddress_detail_country() + other.getApplicant_postalAddress_detail_country());
+        change.setApplicant_postalAddress_detail_postcode(change.getApplicant_postalAddress_detail_postcode() + other.getApplicant_postalAddress_detail_postcode());
+        change.setApplicant_employmentStatus(change.getApplicant_employmentStatus() + other.getApplicant_employmentStatus());
+        change.setApplicant_employmentStatus_code(change.getApplicant_employmentStatus_code() + other.getApplicant_employmentStatus_code());
+        change.setApplicant_employmentStatus_description(change.getApplicant_employmentStatus_description() + other.getApplicant_employmentStatus_description());
+        change.setApplicant_bankDetails(change.getApplicant_bankDetails() + other.getApplicant_bankDetails());
+        change.setApplicant_bankDetails_sortCode(change.getApplicant_bankDetails_sortCode() + other.getApplicant_bankDetails_sortCode());
+        change.setApplicant_bankDetails_accountNo(change.getApplicant_bankDetails_accountNo() + other.getApplicant_bankDetails_accountNo());
+        change.setApplicant_bankDetails_accountName(change.getApplicant_bankDetails_accountName() + other.getApplicant_bankDetails_accountName());
+        change.setApplicant_partner(change.getApplicant_partner() + other.getApplicant_partner());
+        change.setApplicant_partner_hasPartner(change.getApplicant_partner_hasPartner() + other.getApplicant_partner_hasPartner());
+        change.setApplicant_partner_contraryInterest(change.getApplicant_partner_contraryInterest() + other.getApplicant_partner_contraryInterest());
+        change.setApplicant_partner_ciDetails(change.getApplicant_partner_ciDetails() + other.getApplicant_partner_ciDetails());
+        change.setApplicant_partner_ciDetails_code(change.getApplicant_partner_ciDetails_code() + other.getApplicant_partner_ciDetails_code());
+        change.setApplicant_partner_ciDetails_description(change.getApplicant_partner_ciDetails_description() + other.getApplicant_partner_ciDetails_description());
+        change.setApplicant_partnerDetails(change.getApplicant_partnerDetails() + other.getApplicant_partnerDetails());
+        change.setApplicant_partnerDetails_firstName(change.getApplicant_partnerDetails_firstName() + other.getApplicant_partnerDetails_firstName());
+        change.setApplicant_partnerDetails_lastName(change.getApplicant_partnerDetails_lastName() + other.getApplicant_partnerDetails_lastName());
+        change.setApplicant_partnerDetails_dob(change.getApplicant_partnerDetails_dob() + other.getApplicant_partnerDetails_dob());
+        change.setApplicant_partnerDetails_niNumber(change.getApplicant_partnerDetails_niNumber() + other.getApplicant_partnerDetails_niNumber());
+        change.setApplicant_partnerDetails_landline(change.getApplicant_partnerDetails_landline() + other.getApplicant_partnerDetails_landline());
+        change.setApplicant_partnerDetails_employmentStatus(change.getApplicant_partnerDetails_employmentStatus() + other.getApplicant_partnerDetails_employmentStatus());
+        change.setApplicant_partnerDetails_employmentStatus_code(change.getApplicant_partnerDetails_employmentStatus_code() + other.getApplicant_partnerDetails_employmentStatus_code());
+        change.setApplicant_partnerDetails_employmentStatus_description(change.getApplicant_partnerDetails_employmentStatus_description() + other.getApplicant_partnerDetails_employmentStatus_description());
+        change.setApplicant_disabilitySummary(change.getApplicant_disabilitySummary() + other.getApplicant_disabilitySummary());
+        change.setApplicant_disabilitySummary_declaration(change.getApplicant_disabilitySummary_declaration() + other.getApplicant_disabilitySummary_declaration());
+        change.setApplicant_disabilitySummary_disabilities(change.getApplicant_disabilitySummary_disabilities() + other.getApplicant_disabilitySummary_disabilities());
+        change.setApplicant_disabilitySummary_disabilities_disability(change.getApplicant_disabilitySummary_disabilities_disability() + other.getApplicant_disabilitySummary_disabilities_disability());
+        change.setApplicant_id(change.getApplicant_id() + other.getApplicant_id());
+
+        change.setApplication(change.getApplication() + other.getApplication());
+        change.setApplication_offenceType(change.getApplication_offenceType() + other.getApplication_offenceType());
+        change.setApplication_offenceType_code(change.getApplication_offenceType_code() + other.getApplication_offenceType_code());
+        change.setApplication_offenceType_description(change.getApplication_offenceType_description() + other.getApplication_offenceType_description());
+        change.setApplication_caseType(change.getApplication_caseType() + other.getApplication_caseType());
+        change.setApplication_caseType_code(change.getApplication_caseType_code() + other.getApplication_caseType_code());
+        change.setApplication_caseType_description(change.getApplication_caseType_description() + other.getApplication_caseType_description());
+        change.setApplication_repStatus(change.getApplication_repStatus() + other.getApplication_repStatus());
+        change.setApplication_repStatus_status(change.getApplication_repStatus_status() + other.getApplication_repStatus_status());
+        change.setApplication_repStatus_description(change.getApplication_repStatus_description() + other.getApplication_repStatus_description());
+        change.setApplication_magsCourt(change.getApplication_magsCourt() + other.getApplication_magsCourt());
+        change.setApplication_magsCourt_court(change.getApplication_magsCourt_court() + other.getApplication_magsCourt_court());
+        change.setApplication_magsCourt_description(change.getApplication_magsCourt_description() + other.getApplication_magsCourt_description());
+        change.setApplication_repStatusDate(change.getApplication_repStatusDate() + other.getApplication_repStatusDate());
+        change.setApplication_arrestSummonsNumber(change.getApplication_arrestSummonsNumber() + other.getApplication_arrestSummonsNumber());
+        change.setApplication_inCourtCustody(change.getApplication_inCourtCustody() + other.getApplication_inCourtCustody());
+        change.setApplication_imprisoned(change.getApplication_imprisoned() + other.getApplication_imprisoned());
+        change.setApplication_repOrderWithdrawalDate(change.getApplication_repOrderWithdrawalDate() + other.getApplication_repOrderWithdrawalDate());
+        change.setApplication_committalDate(change.getApplication_committalDate() + other.getApplication_committalDate());
+        change.setApplication_sentenceDate(change.getApplication_sentenceDate() + other.getApplication_sentenceDate());
+        change.setApplication_appealType(change.getApplication_appealType() + other.getApplication_appealType());
+        change.setApplication_appealType_code(change.getApplication_appealType_code() + other.getApplication_appealType_code());
+        change.setApplication_appealType_description(change.getApplication_appealType_description() + other.getApplication_appealType_description());
+        change.setApplication_ccHardship(change.getApplication_ccHardship() + other.getApplication_ccHardship());
+        change.setApplication_ccHardship_reviewDate(change.getApplication_ccHardship_reviewDate() + other.getApplication_ccHardship_reviewDate());
+        change.setApplication_ccHardship_reviewResult(change.getApplication_ccHardship_reviewResult() + other.getApplication_ccHardship_reviewResult());
+        change.setApplication_solicitor(change.getApplication_solicitor() + other.getApplication_solicitor());
+        change.setApplication_solicitor_accountCode(change.getApplication_solicitor_accountCode() + other.getApplication_solicitor_accountCode());
+        change.setApplication_solicitor_name(change.getApplication_solicitor_name() + other.getApplication_solicitor_name());
+
+        change.setAssessment(change.getAssessment() + other.getAssessment());
+        change.setAssessment_effectiveDate(change.getAssessment_effectiveDate() + other.getAssessment_effectiveDate());
+        change.setAssessment_monthlyContribution(change.getAssessment_monthlyContribution() + other.getAssessment_monthlyContribution());
+        change.setAssessment_upfrontContribution(change.getAssessment_upfrontContribution() + other.getAssessment_upfrontContribution());
+        change.setAssessment_incomeContributionCap(change.getAssessment_incomeContributionCap() + other.getAssessment_incomeContributionCap());
+        change.setAssessment_assessmentReason(change.getAssessment_assessmentReason() + other.getAssessment_assessmentReason());
+        change.setAssessment_assessmentReason_code(change.getAssessment_assessmentReason_code() + other.getAssessment_assessmentReason_code());
+        change.setAssessment_assessmentReason_description(change.getAssessment_assessmentReason_description() + other.getAssessment_assessmentReason_description());
+        change.setAssessment_assessmentDate(change.getAssessment_assessmentDate() + other.getAssessment_assessmentDate());
+        change.setAssessment_upliftAppliedDate(change.getAssessment_upliftAppliedDate() + other.getAssessment_upliftAppliedDate());
+        change.setAssessment_upliftRemovedDate(change.getAssessment_upliftRemovedDate() + other.getAssessment_upliftRemovedDate());
+        change.setAssessment_incomeEvidenceList(change.getAssessment_incomeEvidenceList() + other.getAssessment_incomeEvidenceList());
+        change.setAssessment_incomeEvidenceList_incomeEvidence(change.getAssessment_incomeEvidenceList_incomeEvidence() + other.getAssessment_incomeEvidenceList_incomeEvidence());
+        change.setAssessment_sufficientDeclaredEquity(change.getAssessment_sufficientDeclaredEquity() + other.getAssessment_sufficientDeclaredEquity());
+        change.setAssessment_sufficientVerifiedEquity(change.getAssessment_sufficientVerifiedEquity() + other.getAssessment_sufficientVerifiedEquity());
+        change.setAssessment_sufficientCapitalandEquity(change.getAssessment_sufficientCapitalandEquity() + other.getAssessment_sufficientCapitalandEquity());
+
+        change.setPassported(change.getPassported() + other.getPassported());
+        change.setPassported_result(change.getPassported_result() + other.getPassported_result());
+        change.setPassported_result_code(change.getPassported_result_code() + other.getPassported_result_code());
+        change.setPassported_result_description(change.getPassported_result_description() + other.getPassported_result_description());
+        change.setPassported_dateCompleted(change.getPassported_dateCompleted() + other.getPassported_dateCompleted());
+        change.setPassported_reason(change.getPassported_reason() + other.getPassported_reason());
+        change.setPassported_reason_code(change.getPassported_reason_code() + other.getPassported_reason_code());
+        change.setPassported_reason_description(change.getPassported_reason_description() + other.getPassported_reason_description());
+
+        change.setEquity(change.getEquity() + other.getEquity());
+        change.setEquity_undeclaredProperty(change.getEquity_undeclaredProperty() + other.getEquity_undeclaredProperty());
+        change.setEquity_equityVerifiedBy(change.getEquity_equityVerifiedBy() + other.getEquity_equityVerifiedBy());
+        change.setEquity_equityVerifiedDate(change.getEquity_equityVerifiedDate() + other.getEquity_equityVerifiedDate());
+        change.setEquity_equityVerified(change.getEquity_equityVerified() + other.getEquity_equityVerified());
+        change.setEquity_propertyDescriptor(change.getEquity_propertyDescriptor() + other.getEquity_propertyDescriptor());
+        change.setEquity_propertyDescriptor_bedRoomCount(change.getEquity_propertyDescriptor_bedRoomCount() + other.getEquity_propertyDescriptor_bedRoomCount());
+        change.setEquity_propertyDescriptor_residentialStatus(change.getEquity_propertyDescriptor_residentialStatus() + other.getEquity_propertyDescriptor_residentialStatus());
+        change.setEquity_propertyDescriptor_residentialStatus_code(change.getEquity_propertyDescriptor_residentialStatus_code() + other.getEquity_propertyDescriptor_residentialStatus_code());
+        change.setEquity_propertyDescriptor_residentialStatus_description(change.getEquity_propertyDescriptor_residentialStatus_description() + other.getEquity_propertyDescriptor_residentialStatus_description());
+        change.setEquity_propertyDescriptor_propertyType(change.getEquity_propertyDescriptor_propertyType() + other.getEquity_propertyDescriptor_propertyType());
+        change.setEquity_propertyDescriptor_propertyType_code(change.getEquity_propertyDescriptor_propertyType_code() + other.getEquity_propertyDescriptor_propertyType_code());
+        change.setEquity_propertyDescriptor_propertyType_description(change.getEquity_propertyDescriptor_propertyType_description() + other.getEquity_propertyDescriptor_propertyType_description());
+        change.setEquity_propertyDescriptor_address(change.getEquity_propertyDescriptor_address() + other.getEquity_propertyDescriptor_address());
+        change.setEquity_propertyDescriptor_address_detail(change.getEquity_propertyDescriptor_address_detail() + other.getEquity_propertyDescriptor_address_detail());
+        change.setEquity_propertyDescriptor_address_detail_line1(change.getEquity_propertyDescriptor_address_detail_line1() + other.getEquity_propertyDescriptor_address_detail_line1());
+        change.setEquity_propertyDescriptor_address_detail_line2(change.getEquity_propertyDescriptor_address_detail_line2() + other.getEquity_propertyDescriptor_address_detail_line2());
+        change.setEquity_propertyDescriptor_address_detail_line3(change.getEquity_propertyDescriptor_address_detail_line3() + other.getEquity_propertyDescriptor_address_detail_line3());
+        change.setEquity_propertyDescriptor_address_detail_city(change.getEquity_propertyDescriptor_address_detail_city() + other.getEquity_propertyDescriptor_address_detail_city());
+        change.setEquity_propertyDescriptor_address_detail_country(change.getEquity_propertyDescriptor_address_detail_country() + other.getEquity_propertyDescriptor_address_detail_country());
+        change.setEquity_propertyDescriptor_address_detail_postcode(change.getEquity_propertyDescriptor_address_detail_postcode() + other.getEquity_propertyDescriptor_address_detail_postcode());
+        change.setEquity_propertyDescriptor_percentageApplicantOwned(change.getEquity_propertyDescriptor_percentageApplicantOwned() + other.getEquity_propertyDescriptor_percentageApplicantOwned());
+        change.setEquity_propertyDescriptor_percentagePartnerOwned(change.getEquity_propertyDescriptor_percentagePartnerOwned() + other.getEquity_propertyDescriptor_percentagePartnerOwned());
+        change.setEquity_propertyDescriptor_applicantEquityAmount(change.getEquity_propertyDescriptor_applicantEquityAmount() + other.getEquity_propertyDescriptor_applicantEquityAmount());
+        change.setEquity_propertyDescriptor_partnerEquityAmount(change.getEquity_propertyDescriptor_partnerEquityAmount() + other.getEquity_propertyDescriptor_partnerEquityAmount());
+        change.setEquity_propertyDescriptor_declaredMortgage(change.getEquity_propertyDescriptor_declaredMortgage() + other.getEquity_propertyDescriptor_declaredMortgage());
+        change.setEquity_propertyDescriptor_declaredValue(change.getEquity_propertyDescriptor_declaredValue() + other.getEquity_propertyDescriptor_declaredValue());
+        change.setEquity_propertyDescriptor_verifiedMortgage(change.getEquity_propertyDescriptor_verifiedMortgage() + other.getEquity_propertyDescriptor_verifiedMortgage());
+        change.setEquity_propertyDescriptor_verifiedValue(change.getEquity_propertyDescriptor_verifiedValue() + other.getEquity_propertyDescriptor_verifiedValue());
+        change.setEquity_propertyDescriptor_tenantInPlace(change.getEquity_propertyDescriptor_tenantInPlace() + other.getEquity_propertyDescriptor_tenantInPlace());
+        change.setEquity_propertyDescriptor_thirdPartyList(change.getEquity_propertyDescriptor_thirdPartyList() + other.getEquity_propertyDescriptor_thirdPartyList());
+        change.setEquity_propertyDescriptor_thirdPartyList_thirdParty(change.getEquity_propertyDescriptor_thirdPartyList_thirdParty() + other.getEquity_propertyDescriptor_thirdPartyList_thirdParty());
+
+        change.setCapitalSummary(change.getCapitalSummary() + other.getCapitalSummary());
+        change.setCapitalSummary_allEvidenceDate(change.getCapitalSummary_allEvidenceDate() + other.getCapitalSummary_allEvidenceDate());
+        change.setCapitalSummary_totalCapitalAssets(change.getCapitalSummary_totalCapitalAssets() + other.getCapitalSummary_totalCapitalAssets());
+        change.setCapitalSummary_noCapitalDeclared(change.getCapitalSummary_noCapitalDeclared() + other.getCapitalSummary_noCapitalDeclared());
+        change.setCapitalSummary_capAllowanceWithheld(change.getCapitalSummary_capAllowanceWithheld() + other.getCapitalSummary_capAllowanceWithheld());
+        change.setCapitalSummary_capAllowanceRestore(change.getCapitalSummary_capAllowanceRestore() + other.getCapitalSummary_capAllowanceRestore());
+        change.setCapitalSummary_motorVehicleOwnership(change.getCapitalSummary_motorVehicleOwnership() + other.getCapitalSummary_motorVehicleOwnership());
+        change.setCapitalSummary_motorVehicleOwnership_owner(change.getCapitalSummary_motorVehicleOwnership_owner() + other.getCapitalSummary_motorVehicleOwnership_owner());
+        change.setCapitalSummary_motorVehicleOwnership_registrationList(change.getCapitalSummary_motorVehicleOwnership_registrationList() + other.getCapitalSummary_motorVehicleOwnership_registrationList());
+        change.setCapitalSummary_motorVehicleOwnership_registrationList_registration(change.getCapitalSummary_motorVehicleOwnership_registrationList_registration() + other.getCapitalSummary_motorVehicleOwnership_registrationList_registration());
+        change.setCapitalSummary_assetList(change.getCapitalSummary_assetList() + other.getCapitalSummary_assetList());
+        change.setCapitalSummary_assetList_asset(change.getCapitalSummary_assetList_asset() + other.getCapitalSummary_assetList_asset());
+        change.setCapitalSummary_propertyList(change.getCapitalSummary_propertyList() + other.getCapitalSummary_propertyList());
+        change.setCapitalSummary_propertyList_property(change.getCapitalSummary_propertyList_property() + other.getCapitalSummary_propertyList_property());
+
+        change.setCcOutcomes(change.getCcOutcomes() + other.getCcOutcomes());
+        change.setCcOutcomes_ccOutcome(change.getCcOutcomes_ccOutcome() + other.getCcOutcomes_ccOutcome());
+
+        change.setCorrespondence(change.getCorrespondence() + other.getCorrespondence());
+        change.setCorrespondence_letter(change.getCorrespondence_letter() + other.getCorrespondence_letter());
+
+        change.setBreathingSpaceInfo(change.getBreathingSpaceInfo() + other.getBreathingSpaceInfo());
+        change.setBreathingSpaceInfo_breathingSpace(change.getBreathingSpaceInfo_breathingSpace() + other.getBreathingSpaceInfo_breathingSpace());
+    }
+
     /**
      * Updates the change counts in `counts` based on the differences between `c1` and `c2`
-     * @param o1 CONTRIBUTIONS first instance
-     * @param o2 CONTRIBUTIONS second instance
-     * @param counts ConcorChangeCounts to update
+     * @param o1 CONTRIBUTIONS first instance.
+     * @param o2 CONTRIBUTIONS second instance.
+     * @param change Change counts to update.
      * @return true if there were any differences; false if there were none.
      */
-    public boolean compare(CONTRIBUTIONS o1, CONTRIBUTIONS o2, ConcorChangeCounts counts) {
+    public boolean compare(CONTRIBUTIONS o1, CONTRIBUTIONS o2, Change change) {
         boolean diff = false;
-        if (compareApplicant(o1 != null ? o1.getApplicant() : null, o2 != null ? o2.getApplicant() : null, counts)) {
+        if (compareApplicant(o1 != null ? o1.getApplicant() : null, o2 != null ? o2.getApplicant() : null, change)) {
             diff = true;
-            counts.setApplicant(counts.getApplicant() + 1);
+            change.setApplicant(change.getApplicant() + 1);
         }
-        if (compareApplication(o1 != null ? o1.getApplication() : null, o2 != null ? o2.getApplication() : null, counts)) {
+        if (compareApplication(o1 != null ? o1.getApplication() : null, o2 != null ? o2.getApplication() : null, change)) {
             diff = true;
-            counts.setApplication(counts.getApplication() + 1);
+            change.setApplication(change.getApplication() + 1);
         }
-        if (compareAssessment(o1 != null ? o1.getAssessment() : null, o2 != null ? o2.getAssessment() : null, counts)) {
+        if (compareAssessment(o1 != null ? o1.getAssessment() : null, o2 != null ? o2.getAssessment() : null, change)) {
             diff = true;
-            counts.setAssessment(counts.getAssessment() + 1);
+            change.setAssessment(change.getAssessment() + 1);
         }
-        if (comparePassported(o1 != null ? o1.getPassported() : null, o2 != null ? o2.getPassported() : null, counts)) {
+        if (comparePassported(o1 != null ? o1.getPassported() : null, o2 != null ? o2.getPassported() : null, change)) {
             diff = true;
-            counts.setPassported(counts.getPassported() + 1);
+            change.setPassported(change.getPassported() + 1);
         }
-        if (compareEquity(o1 != null ? o1.getEquity() : null, o2 != null ? o2.getEquity() : null, counts)) {
+        if (compareEquity(o1 != null ? o1.getEquity() : null, o2 != null ? o2.getEquity() : null, change)) {
             diff = true;
-            counts.setEquity(counts.getEquity() + 1);
+            change.setEquity(change.getEquity() + 1);
         }
-        if (compareCapitalSummary(o1 != null ? o1.getCapitalSummary() : null, o2 != null ? o2.getCapitalSummary() : null, counts)) {
+        if (compareCapitalSummary(o1 != null ? o1.getCapitalSummary() : null, o2 != null ? o2.getCapitalSummary() : null, change)) {
             diff = true;
-            counts.setCapitalSummary(counts.getCapitalSummary() + 1);
+            change.setCapitalSummary(change.getCapitalSummary() + 1);
         }
-        if (compareCcOutcomes(o1 != null ? o1.getCcOutcomes() : null, o2 != null ? o2.getCcOutcomes() : null, counts)) {
+        if (compareCcOutcomes(o1 != null ? o1.getCcOutcomes() : null, o2 != null ? o2.getCcOutcomes() : null, change)) {
             diff = true;
-            counts.setCcOutcomes(counts.getCcOutcomes() + 1);
+            change.setCcOutcomes(change.getCcOutcomes() + 1);
         }
-        if (compareCorrespondence(o1 != null ? o1.getCorrespondence() : null, o2 != null ? o2.getCorrespondence() : null, counts)) {
+        if (compareCorrespondence(o1 != null ? o1.getCorrespondence() : null, o2 != null ? o2.getCorrespondence() : null, change)) {
             diff = true;
-            counts.setCorrespondence(counts.getCorrespondence() + 1);
+            change.setCorrespondence(change.getCorrespondence() + 1);
         }
-        if (compareBreathingSpaceInfo(o1 != null ? o1.getBreathingSpaceInfo() : null, o2 != null ? o2.getBreathingSpaceInfo() : null, counts)) {
+        if (compareBreathingSpaceInfo(o1 != null ? o1.getBreathingSpaceInfo() : null, o2 != null ? o2.getBreathingSpaceInfo() : null, change)) {
             diff = true;
-            counts.setBreathingSpaceInfo(counts.getBreathingSpaceInfo() + 1);
+            change.setBreathingSpaceInfo(change.getBreathingSpaceInfo() + 1);
         }
         if (!Objects.equals(o1 != null ? o1.getId() : null, o2 != null ? o2.getId() : null)) {
             diff = true;
@@ -67,7 +249,7 @@ public class ConcorComparison {
         return diff;
     }
 
-    private boolean compareApplicant(CONTRIBUTIONS.Applicant o1, CONTRIBUTIONS.Applicant o2, ConcorChangeCounts counts) {
+    private boolean compareApplicant(CONTRIBUTIONS.Applicant o1, CONTRIBUTIONS.Applicant o2, Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getFirstName() : null, o2 != null ? o2.getFirstName() : null)) {
             diff = true;
@@ -150,7 +332,7 @@ public class ConcorComparison {
 
     private boolean compareApplicant_PreferredPaymentMethod(CONTRIBUTIONS.Applicant.PreferredPaymentMethod o1,
                                                             CONTRIBUTIONS.Applicant.PreferredPaymentMethod o2,
-                                                            ConcorChangeCounts counts) {
+                                                            Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getCode() : null, o2 != null ? o2.getCode() : null)) {
             diff = true;
@@ -165,7 +347,7 @@ public class ConcorComparison {
 
     private boolean compareApplicant_HomeAddress(CONTRIBUTIONS.Applicant.HomeAddress o1,
                                                  CONTRIBUTIONS.Applicant.HomeAddress o2,
-                                                 ConcorChangeCounts counts) {
+                                                 Change counts) {
         boolean diff = false;
         if (compareApplicant_HomeAddress_Detail(o1 != null ? o1.getDetail() : null, o2 != null ? o2.getDetail() : null, counts)) {
             diff = true;
@@ -176,7 +358,7 @@ public class ConcorComparison {
 
     private boolean compareApplicant_HomeAddress_Detail(CONTRIBUTIONS.Applicant.HomeAddress.Detail o1,
                                                         CONTRIBUTIONS.Applicant.HomeAddress.Detail o2,
-                                                        ConcorChangeCounts counts) {
+                                                        Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getLine1() : null, o2 != null ? o2.getLine1() : null)) {
             diff = true;
@@ -207,7 +389,7 @@ public class ConcorComparison {
 
     private boolean compareApplicant_PostalAddress(CONTRIBUTIONS.Applicant.PostalAddress o1,
                                                    CONTRIBUTIONS.Applicant.PostalAddress o2,
-                                                   ConcorChangeCounts counts) {
+                                                   Change counts) {
         boolean diff = false;
         if (compareApplicant_PostalAddress_Detail(o1 != null ? o1.getDetail() : null, o2 != null ? o2.getDetail() : null, counts)) {
             diff = true;
@@ -219,7 +401,7 @@ public class ConcorComparison {
     // Can we make the different address types common?
     private boolean compareApplicant_PostalAddress_Detail(CONTRIBUTIONS.Applicant.PostalAddress.Detail o1,
                                                           CONTRIBUTIONS.Applicant.PostalAddress.Detail o2,
-                                                          ConcorChangeCounts counts) {
+                                                          Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getLine1() : null, o2 != null ? o2.getLine1() : null)) {
             diff = true;
@@ -250,7 +432,7 @@ public class ConcorComparison {
 
     private boolean compareApplicant_EmploymentStatus(CONTRIBUTIONS.Applicant.EmploymentStatus o1,
                                                       CONTRIBUTIONS.Applicant.EmploymentStatus o2,
-                                                      ConcorChangeCounts counts) {
+                                                      Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getCode() : null, o2 != null ? o2.getCode() : null)) {
             diff = true;
@@ -265,7 +447,7 @@ public class ConcorComparison {
 
     private boolean compareApplicant_BankDetails(CONTRIBUTIONS.Applicant.BankDetails o1,
                                                  CONTRIBUTIONS.Applicant.BankDetails o2,
-                                                 ConcorChangeCounts counts) {
+                                                 Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getSortCode() : null, o2 != null ? o2.getSortCode() : null)) {
             diff = true;
@@ -284,7 +466,7 @@ public class ConcorComparison {
 
     private boolean compareApplicant_Partner(CONTRIBUTIONS.Applicant.Partner o1,
                                              CONTRIBUTIONS.Applicant.Partner o2,
-                                             ConcorChangeCounts counts) {
+                                             Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getHasPartner() : null, o2 != null ? o2.getHasPartner() : null)) {
             diff = true;
@@ -303,7 +485,7 @@ public class ConcorComparison {
 
     private boolean compareApplicant_Partner_CiDetails(CONTRIBUTIONS.Applicant.Partner.CiDetails o1,
                                                        CONTRIBUTIONS.Applicant.Partner.CiDetails o2,
-                                                       ConcorChangeCounts counts) {
+                                                       Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getCode() : null, o2 != null ? o2.getCode() : null)) {
             diff = true;
@@ -318,7 +500,7 @@ public class ConcorComparison {
 
     private boolean compareApplicant_PartnerDetails(CONTRIBUTIONS.Applicant.PartnerDetails o1,
                                                     CONTRIBUTIONS.Applicant.PartnerDetails o2,
-                                                    ConcorChangeCounts counts) {
+                                                    Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getFirstName() : null, o2 != null ? o2.getFirstName() : null)) {
             diff = true;
@@ -345,7 +527,7 @@ public class ConcorComparison {
 
     private boolean compareApplicant_PartnerDetails_EmploymentStatus(CONTRIBUTIONS.Applicant.PartnerDetails.EmploymentStatus o1,
                                                                      CONTRIBUTIONS.Applicant.PartnerDetails.EmploymentStatus o2,
-                                                                     ConcorChangeCounts counts) {
+                                                                     Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getCode() : null, o2 != null ? o2.getCode() : null)) {
             diff = true;
@@ -360,7 +542,7 @@ public class ConcorComparison {
 
     private boolean compareApplicant_DisabilitySummary(CONTRIBUTIONS.Applicant.DisabilitySummary o1,
                                                        CONTRIBUTIONS.Applicant.DisabilitySummary o2,
-                                                       ConcorChangeCounts counts) {
+                                                       Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getDeclaration() : null, o2 != null ? o2.getDeclaration() : null)) {
             diff = true;
@@ -375,7 +557,7 @@ public class ConcorComparison {
 
     private boolean compareApplicant_DisabilitySummary_Disabilities(CONTRIBUTIONS.Applicant.DisabilitySummary.Disabilities o1,
                                                                     CONTRIBUTIONS.Applicant.DisabilitySummary.Disabilities o2,
-                                                                    ConcorChangeCounts counts) {
+                                                                    Change counts) {
         boolean diff = false;
         if (compareApplicant_DisabilitySummary_Disabilities_Disability(o1 != null ? o1.getDisability() : null, o2 != null ? o2.getDisability() : null, counts)) {
             diff = true;
@@ -386,11 +568,11 @@ public class ConcorComparison {
 
     private boolean compareApplicant_DisabilitySummary_Disabilities_Disability(List<CONTRIBUTIONS.Applicant.DisabilitySummary.Disabilities.Disability> o1,
                                                                                List<CONTRIBUTIONS.Applicant.DisabilitySummary.Disabilities.Disability> o2,
-                                                                               ConcorChangeCounts counts) {
+                                                                               Change counts) {
         return !Objects.equals(o1 != null ? o1.size() : 0, o2 != null ? o2.size() : 0);
     }
 
-    private boolean compareApplication(CONTRIBUTIONS.Application o1, CONTRIBUTIONS.Application o2, ConcorChangeCounts counts) {
+    private boolean compareApplication(CONTRIBUTIONS.Application o1, CONTRIBUTIONS.Application o2, Change counts) {
         boolean diff = false;
         if (compareApplication_OffenceType(o1 != null ? o1.getOffenceType() : null, o2 != null ? o2.getOffenceType() : null, counts)) {
             diff = true;
@@ -453,7 +635,7 @@ public class ConcorComparison {
 
     private boolean compareApplication_OffenceType(CONTRIBUTIONS.Application.OffenceType o1,
                                                    CONTRIBUTIONS.Application.OffenceType o2,
-                                                   ConcorChangeCounts counts) {
+                                                   Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getCode() : null, o2 != null ? o2.getCode() : null)) {
             diff = true;
@@ -468,7 +650,7 @@ public class ConcorComparison {
 
     private boolean compareApplication_CaseType(CONTRIBUTIONS.Application.CaseType o1,
                                                 CONTRIBUTIONS.Application.CaseType o2,
-                                                ConcorChangeCounts counts) {
+                                                Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getCode() : null, o2 != null ? o2.getCode() : null)) {
             diff = true;
@@ -483,7 +665,7 @@ public class ConcorComparison {
 
     private boolean compareApplication_RepStatus(CONTRIBUTIONS.Application.RepStatus o1,
                                                  CONTRIBUTIONS.Application.RepStatus o2,
-                                                 ConcorChangeCounts counts) {
+                                                 Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getStatus() : null, o2 != null ? o2.getStatus() : null)) {
             diff = true;
@@ -498,7 +680,7 @@ public class ConcorComparison {
 
     private boolean compareApplication_MagsCourt(CONTRIBUTIONS.Application.MagsCourt o1,
                                                  CONTRIBUTIONS.Application.MagsCourt o2,
-                                                 ConcorChangeCounts counts) {
+                                                 Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getCourt() : null, o2 != null ? o2.getCourt() : null)) {
             diff = true;
@@ -513,7 +695,7 @@ public class ConcorComparison {
 
     private boolean compareApplication_AppealType(CONTRIBUTIONS.Application.AppealType o1,
                                                   CONTRIBUTIONS.Application.AppealType o2,
-                                                  ConcorChangeCounts counts) {
+                                                  Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getCode() : null, o2 != null ? o2.getCode() : null)) {
             diff = true;
@@ -528,7 +710,7 @@ public class ConcorComparison {
 
     private boolean compareApplication_CcHardship(CONTRIBUTIONS.Application.CcHardship o1,
                                                   CONTRIBUTIONS.Application.CcHardship o2,
-                                                  ConcorChangeCounts counts) {
+                                                  Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getReviewDate() : null, o2 != null ? o2.getReviewDate() : null)) {
             diff = true;
@@ -543,7 +725,7 @@ public class ConcorComparison {
 
     private boolean compareApplication_Solicitor(CONTRIBUTIONS.Application.Solicitor o1,
                                                  CONTRIBUTIONS.Application.Solicitor o2,
-                                                 ConcorChangeCounts counts) {
+                                                 Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getAccountCode() : null, o2 != null ? o2.getAccountCode() : null)) {
             diff = true;
@@ -556,7 +738,7 @@ public class ConcorComparison {
         return diff;
     }
 
-    private boolean compareAssessment(CONTRIBUTIONS.Assessment o1, CONTRIBUTIONS.Assessment o2, ConcorChangeCounts counts) {
+    private boolean compareAssessment(CONTRIBUTIONS.Assessment o1, CONTRIBUTIONS.Assessment o2, Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getEffectiveDate() : null, o2 != null ? o2.getEffectiveDate() : null)) {
             diff = true;
@@ -611,7 +793,7 @@ public class ConcorComparison {
 
     private boolean compareAssessment_AssessmentReason(CONTRIBUTIONS.Assessment.AssessmentReason o1,
                                                        CONTRIBUTIONS.Assessment.AssessmentReason o2,
-                                                       ConcorChangeCounts counts) {
+                                                       Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getCode() : null, o2 != null ? o2.getCode() : null)) {
             diff = true;
@@ -626,7 +808,7 @@ public class ConcorComparison {
 
     private boolean compareAssessment_IncomeEvidenceList(CONTRIBUTIONS.Assessment.IncomeEvidenceList o1,
                                                          CONTRIBUTIONS.Assessment.IncomeEvidenceList o2,
-                                                         ConcorChangeCounts counts) {
+                                                         Change counts) {
         boolean diff = false;
         if (compareAssessment_IncomeEvidenceList_IncomeEvidence(o1 != null ? o1.getIncomeEvidence() : null, o2 != null ? o2.getIncomeEvidence() : null, counts)) {
             diff = true;
@@ -637,11 +819,11 @@ public class ConcorComparison {
 
     private boolean compareAssessment_IncomeEvidenceList_IncomeEvidence(List<CONTRIBUTIONS.Assessment.IncomeEvidenceList.IncomeEvidence> o1,
                                                                         List<CONTRIBUTIONS.Assessment.IncomeEvidenceList.IncomeEvidence> o2,
-                                                                        ConcorChangeCounts counts) {
+                                                                        Change counts) {
         return !Objects.equals(o1 != null ? o1.size() : 0, o2 != null ? o2.size() : 0);
     }
 
-    private boolean comparePassported(CONTRIBUTIONS.Passported o1, CONTRIBUTIONS.Passported o2, ConcorChangeCounts counts) {
+    private boolean comparePassported(CONTRIBUTIONS.Passported o1, CONTRIBUTIONS.Passported o2, Change counts) {
         boolean diff = false;
         if (comparePassported_Result(o1 != null ? o1.getResult() : null, o2 != null ? o2.getResult() : null, counts)) {
             diff = true;
@@ -660,7 +842,7 @@ public class ConcorComparison {
 
     private boolean comparePassported_Result(CONTRIBUTIONS.Passported.Result o1,
                                              CONTRIBUTIONS.Passported.Result o2,
-                                             ConcorChangeCounts counts) {
+                                             Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getCode() : null, o2 != null ? o2.getCode() : null)) {
             diff = true;
@@ -675,7 +857,7 @@ public class ConcorComparison {
 
     private boolean comparePassported_Reason(CONTRIBUTIONS.Passported.Reason o1,
                                              CONTRIBUTIONS.Passported.Reason o2,
-                                             ConcorChangeCounts counts) {
+                                             Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getCode() : null, o2 != null ? o2.getCode() : null)) {
             diff = true;
@@ -688,7 +870,7 @@ public class ConcorComparison {
         return diff;
     }
 
-    private boolean compareEquity(CONTRIBUTIONS.Equity o1, CONTRIBUTIONS.Equity o2, ConcorChangeCounts counts) {
+    private boolean compareEquity(CONTRIBUTIONS.Equity o1, CONTRIBUTIONS.Equity o2, Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getUndeclaredProperty() : null, o2 != null ? o2.getUndeclaredProperty() : null)) {
             diff = true;
@@ -715,7 +897,7 @@ public class ConcorComparison {
 
     private boolean compareEquity_PropertyDescriptor(CONTRIBUTIONS.Equity.PropertyDescriptor o1,
                                                      CONTRIBUTIONS.Equity.PropertyDescriptor o2,
-                                                     ConcorChangeCounts counts) {
+                                                     Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getBedRoomCount() : null, o2 != null ? o2.getBedRoomCount() : null)) {
             diff = true;
@@ -778,7 +960,7 @@ public class ConcorComparison {
 
     private boolean compareEquity_PropertyDescriptor_ResidentialStatus(CONTRIBUTIONS.Equity.PropertyDescriptor.ResidentialStatus o1,
                                                                        CONTRIBUTIONS.Equity.PropertyDescriptor.ResidentialStatus o2,
-                                                                       ConcorChangeCounts counts) {
+                                                                       Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getCode() : null, o2 != null ? o2.getCode() : null)) {
             diff = true;
@@ -793,7 +975,7 @@ public class ConcorComparison {
 
     private boolean compareEquity_PropertyDescriptor_PropertyType(CONTRIBUTIONS.Equity.PropertyDescriptor.PropertyType o1,
                                                                   CONTRIBUTIONS.Equity.PropertyDescriptor.PropertyType o2,
-                                                                  ConcorChangeCounts counts) {
+                                                                  Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getCode() : null, o2 != null ? o2.getCode() : null)) {
             diff = true;
@@ -808,7 +990,7 @@ public class ConcorComparison {
 
     private boolean compareEquity_PropertyDescriptor_Address(CONTRIBUTIONS.Equity.PropertyDescriptor.Address o1,
                                                              CONTRIBUTIONS.Equity.PropertyDescriptor.Address o2,
-                                                             ConcorChangeCounts counts) {
+                                                             Change counts) {
         boolean diff = false;
         if (compareEquity_PropertyDescriptor_Address_Detail(o1 != null ? o1.getDetail() : null, o2 != null ? o2.getDetail() : null, counts)) {
             diff = true;
@@ -819,7 +1001,7 @@ public class ConcorComparison {
 
     private boolean compareEquity_PropertyDescriptor_Address_Detail(CONTRIBUTIONS.Equity.PropertyDescriptor.Address.Detail o1,
                                                                     CONTRIBUTIONS.Equity.PropertyDescriptor.Address.Detail o2,
-                                                                    ConcorChangeCounts counts) {
+                                                                    Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getLine1() : null, o2 != null ? o2.getLine1() : null)) {
             diff = true;
@@ -850,7 +1032,7 @@ public class ConcorComparison {
 
     private boolean compareEquity_PropertyDescriptor_ThirdPartyList(CONTRIBUTIONS.Equity.PropertyDescriptor.ThirdPartyList o1,
                                                                     CONTRIBUTIONS.Equity.PropertyDescriptor.ThirdPartyList o2,
-                                                                    ConcorChangeCounts counts) {
+                                                                    Change counts) {
         boolean diff = false;
         if (compareEquity_PropertyDescriptor_ThirdPartyList_ThirdParty(o1 != null ? o1.getThirdParty() : null, o2 != null ? o2.getThirdParty() : null, counts)) {
             diff = true;
@@ -861,11 +1043,11 @@ public class ConcorComparison {
 
     private boolean compareEquity_PropertyDescriptor_ThirdPartyList_ThirdParty(List<CONTRIBUTIONS.Equity.PropertyDescriptor.ThirdPartyList.ThirdParty> o1,
                                                                                List<CONTRIBUTIONS.Equity.PropertyDescriptor.ThirdPartyList.ThirdParty> o2,
-                                                                               ConcorChangeCounts counts) {
+                                                                               Change counts) {
         return !Objects.equals(o1 != null ? o1.size() : 0, o2 != null ? o2.size() : 0);
     }
 
-    private boolean compareCapitalSummary(CONTRIBUTIONS.CapitalSummary o1, CONTRIBUTIONS.CapitalSummary o2, ConcorChangeCounts counts) {
+    private boolean compareCapitalSummary(CONTRIBUTIONS.CapitalSummary o1, CONTRIBUTIONS.CapitalSummary o2, Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getAllEvidenceDate() : null, o2 != null ? o2.getAllEvidenceDate() : null)) {
             diff = true;
@@ -904,7 +1086,7 @@ public class ConcorComparison {
 
     private boolean compareCapitalSummary_MotorVehicleOwnership(CONTRIBUTIONS.CapitalSummary.MotorVehicleOwnership o1,
                                                                 CONTRIBUTIONS.CapitalSummary.MotorVehicleOwnership o2,
-                                                                ConcorChangeCounts counts) {
+                                                                Change counts) {
         boolean diff = false;
         if (!Objects.equals(o1 != null ? o1.getOwner() : null, o2 != null ? o2.getOwner() : null)) {
             diff = true;
@@ -919,7 +1101,7 @@ public class ConcorComparison {
 
     private boolean compareCapitalSummary_MotorVehicleOwnership_RegistrationList(CONTRIBUTIONS.CapitalSummary.MotorVehicleOwnership.RegistrationList o1,
                                                                                  CONTRIBUTIONS.CapitalSummary.MotorVehicleOwnership.RegistrationList o2,
-                                                                                 ConcorChangeCounts counts) {
+                                                                                 Change counts) {
         boolean diff = false;
         if (compareCapitalSummary_MotorVehicleOwnership_RegistrationList_Registration(o1 != null ? o1.getRegistration() : null, o2 != null ? o2.getRegistration() : null, counts)) {
             diff = true;
@@ -930,13 +1112,13 @@ public class ConcorComparison {
 
     private boolean compareCapitalSummary_MotorVehicleOwnership_RegistrationList_Registration(List<String> o1,
                                                                                               List<String> o2,
-                                                                                              ConcorChangeCounts counts) {
+                                                                                              Change counts) {
         return !Objects.equals(o1 != null ? o1.size() : 0, o2 != null ? o2.size() : 0);
     }
 
     private boolean compareCapitalSummary_AssetList(CONTRIBUTIONS.CapitalSummary.AssetList o1,
                                                     CONTRIBUTIONS.CapitalSummary.AssetList o2,
-                                                    ConcorChangeCounts counts) {
+                                                    Change counts) {
         boolean diff = false;
         if (compareCapitalSummary_AssetList_Asset(o1 != null ? o1.getAsset() : null, o2 != null ? o2.getAsset() : null, counts)) {
             diff = true;
@@ -947,13 +1129,13 @@ public class ConcorComparison {
 
     private boolean compareCapitalSummary_AssetList_Asset(List<CONTRIBUTIONS.CapitalSummary.AssetList.Asset> o1,
                                                           List<CONTRIBUTIONS.CapitalSummary.AssetList.Asset> o2,
-                                                          ConcorChangeCounts counts) {
+                                                          Change counts) {
         return !Objects.equals(o1 != null ? o1.size() : 0, o2 != null ? o2.size() : 0);
     }
 
     private boolean compareCapitalSummary_PropertyList(CONTRIBUTIONS.CapitalSummary.PropertyList o1,
                                                        CONTRIBUTIONS.CapitalSummary.PropertyList o2,
-                                                       ConcorChangeCounts counts) {
+                                                       Change counts) {
         boolean diff = false;
         if (compareCapitalSummary_PropertyList_Property(o1 != null ? o1.getProperty() : null, o2 != null ? o2.getProperty() : null, counts)) {
             diff = true;
@@ -964,11 +1146,11 @@ public class ConcorComparison {
 
     private boolean compareCapitalSummary_PropertyList_Property(List<CONTRIBUTIONS.CapitalSummary.PropertyList.Property> o1,
                                                                 List<CONTRIBUTIONS.CapitalSummary.PropertyList.Property> o2,
-                                                                ConcorChangeCounts counts) {
+                                                                Change counts) {
         return !Objects.equals(o1 != null ? o1.size() : 0, o2 != null ? o2.size() : 0);
     }
 
-    private boolean compareCcOutcomes(CONTRIBUTIONS.CcOutcomes o1, CONTRIBUTIONS.CcOutcomes o2, ConcorChangeCounts counts) {
+    private boolean compareCcOutcomes(CONTRIBUTIONS.CcOutcomes o1, CONTRIBUTIONS.CcOutcomes o2, Change counts) {
         boolean diff = false;
         if (compareCcOutcomes_CcOutcome(o1 != null ? o1.getCcOutcome() : null, o2 != null ? o2.getCcOutcome() : null, counts)) {
             diff = true;
@@ -979,11 +1161,11 @@ public class ConcorComparison {
 
     private boolean compareCcOutcomes_CcOutcome(List<CONTRIBUTIONS.CcOutcomes.CcOutcome> o1,
                                                 List<CONTRIBUTIONS.CcOutcomes.CcOutcome> o2,
-                                                ConcorChangeCounts counts) {
+                                                Change counts) {
         return !Objects.equals(o1 != null ? o1.size() : 0, o2 != null ? o2.size() : 0);
     }
 
-    private boolean compareCorrespondence(CONTRIBUTIONS.Correspondence o1, CONTRIBUTIONS.Correspondence o2, ConcorChangeCounts counts) {
+    private boolean compareCorrespondence(CONTRIBUTIONS.Correspondence o1, CONTRIBUTIONS.Correspondence o2, Change counts) {
         boolean diff = false;
         if (compareCorrespondence_Letter(o1 != null ? o1.getLetter() : null, o2 != null ? o2.getLetter() : null, counts)) {
             diff = true;
@@ -994,13 +1176,13 @@ public class ConcorComparison {
 
     private boolean compareCorrespondence_Letter(List<CONTRIBUTIONS.Correspondence.Letter> o1,
                                                  List<CONTRIBUTIONS.Correspondence.Letter> o2,
-                                                 ConcorChangeCounts counts) {
+                                                 Change counts) {
         return !Objects.equals(o1 != null ? o1.size() : 0, o2 != null ? o2.size() : 0);
     }
 
     private boolean compareBreathingSpaceInfo(CONTRIBUTIONS.BreathingSpaceInfo o1,
                                               CONTRIBUTIONS.BreathingSpaceInfo o2,
-                                              ConcorChangeCounts counts) {
+                                              Change counts) {
         boolean diff = false;
         if (compareBreathingSpaceInfo_BreathingSpace(o1 != null ? o1.getBreathingSpace() : null, o2 != null ? o2.getBreathingSpace() : null, counts)) {
             diff = true;
@@ -1011,7 +1193,7 @@ public class ConcorComparison {
 
     private boolean compareBreathingSpaceInfo_BreathingSpace(List<CONTRIBUTIONS.BreathingSpaceInfo.BreathingSpace> o1,
                                                              List<CONTRIBUTIONS.BreathingSpaceInfo.BreathingSpace> o2,
-                                                             ConcorChangeCounts counts) {
+                                                             Change counts) {
         return !Objects.equals(o1 != null ? o1.size() : 0, o2 != null ? o2.size() : 0);
     }
 }

@@ -2,19 +2,21 @@ package uk.gov.justice.laadces.deltaconcor.report;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-class ConcorChangeCountsFieldComparator implements Comparator<String> {
-    static final ConcorChangeCountsFieldComparator INSTANCE = new ConcorChangeCountsFieldComparator();
+/**
+ * This exists to provide a consistent ordering of fields in the Change class when OpenCSV outputs them as CSV rows.
+ */
+public class ChangeFieldComparator implements Comparator<String> {
+    public static final ChangeFieldComparator INSTANCE = new ChangeFieldComparator();
 
     private final List<String> fieldOrder;
 
-    private ConcorChangeCountsFieldComparator() {
+    private ChangeFieldComparator() {
         this.fieldOrder = new ArrayList<>();
-        for (Field field : ConcorChangeCounts.class.getDeclaredFields()) {
+        for (Field field : Change.class.getDeclaredFields()) {
             fieldOrder.add(field.getName().toLowerCase(Locale.ROOT));
         }
     }

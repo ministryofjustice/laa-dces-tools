@@ -3,10 +3,10 @@ package uk.gov.justice.laadces.deltaconcor.report;
 import lombok.Data;
 
 @Data
-public class ConcorChangeCounts {
+public class Change {
     private final String date; // predefined (YYYY-MM-DD) passed to constructor
-    private final int sentRecords; // predefined passed to constructor
 
+    private int sentRecords; // agg
     private int changedRecords; // agg
 
     private int applicant; // agg

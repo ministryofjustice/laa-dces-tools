@@ -1,31 +1,46 @@
+# Exclude OS-specific junk files.
 .DS_Store
+
+### Exclude env files - may contain confidential env-vars.
 .env*
 *.env
+
+### Exclude the Gradle cache, etc.
 .gradle/
+
+### Bypass any exclude *.jar exclusions for the Gradle Wrapper JAR.
 !**/gradle/wrapper/gradle-wrapper.jar
+
+### Exclude IntelliJ workspace, project and module files - may contain confidential env-vars.
 .idea/
 *.iws
 *.iml
 *.ipr
+
+### Exclude .log log files - except source files.
+*.log
+!**/src/main/**/*.log
+!**/src/test/**/*.log
+
+### Exclude .run run configurations - may contain confidential env-vars.
 .run/
+
+### Exclude Visual Studio Code workspace and project files - may contain confidential env-vars.
 .vscode/
 
+### IDE or build tool build output directories - except source files.
 bin/
+build/
+dist/
+out/
+target/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
-
-build/
 !**/src/main/**/build/
 !**/src/test/**/build/
-
-dist/
 !**/src/main/**/dist/
 !**/src/test/**/dist/
-
-out/
 !**/src/main/**/out/
 !**/src/test/**/out/
-
-target/
 !**/src/main/**/target/
 !**/src/test/**/target/
