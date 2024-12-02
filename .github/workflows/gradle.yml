@@ -15,8 +15,15 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           java-version: "17"
-          distribution: "temurin"
+          distribution: "corretto"
       - uses: gradle/actions/setup-gradle@v4
-      - run: |
+      - name: verifyconcor
+        run: |
           cd verifyconcor
           ./gradlew clean build
+          cd ..
+      - name: deltaconcor
+        run: |
+          cd deltaconcor
+          ./gradlew clean build
+          cd ..
