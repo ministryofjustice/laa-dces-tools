@@ -10,6 +10,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.laadces.deltaconcor.generated.CONTRIBUTIONS;
 import uk.gov.justice.laadces.deltaconcor.report.Change;
+import uk.gov.justice.laadces.deltaconcor.report.ChangeLog;
 import uk.gov.justice.laadces.deltaconcor.repository.ConcorContribution;
 import uk.gov.justice.laadces.deltaconcor.repository.ConcorContributionRepository;
 import uk.gov.justice.laadces.deltaconcor.repository.ConcorTemplateRepository;
@@ -25,16 +26,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * ApplicationRunner class that examines the data in the database.
+ * ApplicationRunner class that reports on the data in the database.
+ * The `Runner#run(ApplicationArguments)` method is basically the `#main(String[])` of this application.
  */
 @Component
 @Profile("!test")
 @RequiredArgsConstructor
 @Slf4j
 class Runner implements ApplicationRunner {
+    private static final LocalDate START_DATE = LocalDate.of(2024, 6, 1); // inclusive
+    private static final LocalDate END_DATE = LocalDate.of(2024, 7, 1); // exclusive
+
     private static final int BATCH_SIZE = 1000;
 
     // Constructor-wired Spring components
@@ -44,163 +48,181 @@ class Runner implements ApplicationRunner {
     private final ChangeService changeService;
     private final CsvOutputService csvoutput;
 
-    private final Set<Long> maatIdsToBackfill = new TreeSet<>();
+    private final Set<Long> maatIdsToBackFill = new TreeSet<>();
     private final Map<Long, CONTRIBUTIONS> maatIdToContribution = new TreeMap<>();
     private final ArrayList<Change> newChanges = new ArrayList<>();
     private final ArrayList<Change> updChanges = new ArrayList<>();
+    private final ArrayList<ChangeLog> changeLogs = new ArrayList<>();
 
-    private int countRowsWithPredecessorsInDateRange = 0;
+    private int countRowsInDateRange = 0;
+    private int countRows1 = 0;
+    private int countRows2 = 0;
 
     /**
      * Main runner method, just iterates over the database table, calling #examineConcorContribution() for each row.
      * Handles limiting the data size and paging efficiently, with some progress-logging to the application log.
      *
      * @param args ApplicationArguments ignored.
-     * @throws Exception if an error occurs.
      */
     @Override
-    public void run(final ApplicationArguments args) throws Exception {
-        final LocalDate startDate = LocalDate.of(2024, 10, 1); // inclusive
-        final LocalDate endDate = LocalDate.of(2024, 11, 1); // exclusive
-        final int nDays = (int) ChronoUnit.DAYS.between(startDate, endDate);
-        log.info("run: Processing {} days in period [{}, {})", nDays, startDate, endDate);
+    public void run(final ApplicationArguments args) {
+        reset(START_DATE, END_DATE);
 
-        reset(nDays);
-        for (int i = 0; i < nDays; ++i) {
-            newChanges.add(new Change(startDate.plusDays(i).toString()));
-            updChanges.add(new Change(startDate.plusDays(i).toString()));
-        }
-        log.info("run: Counts reset, now finding ids to process");
+        log.info("run: Locating concorId range to process");
+        final long startId = templRepository.minIdAfterOrEquals(START_DATE);
+        final long endId = templRepository.maxIdBefore(END_DATE);
 
-        final long startId = templRepository.minIdAfterOrEquals(startDate);
-        final long endId = templRepository.maxIdBefore(endDate);
-        log.info("run: Processing concor_contributions rows with {} <= id <= {}", startId, endId);
+        log.info("run: Finding maatIds in range {} <= concorId <= {}", startId, endId);
+        findMaatIdsToBackFill(startId, endId);
+        log.info("run: Found {} new maatIds, {} maatIds to back-fill, {} concorIds in range, {} concorIds #1, {} concorIds #2",
+                maatIdToContribution.size(), maatIdsToBackFill.size(), countRowsInDateRange, countRows1, countRows2);
 
-        findMaatIdsToBackfill(startId, endId);
-        log.info("run: {} new maatIds, {} maatIds to back-fill, {} contributions with predecessor in date range",
-                maatIdToContribution.size(), maatIdsToBackfill.size(), countRowsWithPredecessorsInDateRange);
-
-        if (!maatIdsToBackfill.isEmpty()) {
-            final long lastId = slowBackfillMaatIds(startId - 1);
-            log.info("run: {} maatIds left to back-fill after slow walk back {} >= id >= {}", maatIdsToBackfill.size(), startId - 1, lastId);
-            if (!maatIdsToBackfill.isEmpty()) {
-                final long lastId2 = fastBackfillMaatIds(lastId - 1);
-                log.info("run: {} maatIds left to back-fill after fast walk back {} >= id >= {}", maatIdsToBackfill.size(), lastId - 1, lastId2);
+        if (!maatIdsToBackFill.isEmpty()) {
+            final long lastId = slowBackFillMaatIds(startId - 1L);
+            log.info("run: {} maatIds left to back-fill after slow walk back {} >= concorId >= {}", maatIdsToBackFill.size(), startId - 1L, lastId);
+            if (!maatIdsToBackFill.isEmpty()) {
+                final long lastId2 = fastBackFillMaatIds(lastId - 1L);
+                log.info("run: {} maatIds left to back-fill after fast walk back {} >= concorId >= {}", maatIdsToBackFill.size(), lastId - 1L, lastId2);
             }
         }
         log.info("run: {} maatId predecessors found", maatIdToContribution.size());
 
-        generateDailyCounts(startDate, startId, endId);
+        generateDailyCounts(START_DATE, startId, endId);
         log.info("run: Counts generated, now outputting CSV files");
 
         csvoutput.writeChanges("/tmp/deltaconcor-new.csv", newChanges);
         csvoutput.writeChanges("/tmp/deltaconcor-upd.csv", updChanges);
+        csvoutput.writeChangeLogs("/tmp/deltaconcor-log.csv", changeLogs);
         log.info("run: Done");
     }
 
-    private void reset(final int nDays) {
-        maatIdsToBackfill.clear();
+    private void reset(final LocalDate startDate, final LocalDate endDate) {
+        final int nDays = (int) ChronoUnit.DAYS.between(startDate, endDate);
+        log.info("reset: {} days in period [{}, {})", nDays, startDate, endDate);
+        maatIdsToBackFill.clear();
         maatIdToContribution.clear();
         newChanges.clear();
-        newChanges.trimToSize();
-        newChanges.ensureCapacity(nDays);
         updChanges.clear();
+        newChanges.trimToSize();
         updChanges.trimToSize();
+        newChanges.ensureCapacity(nDays);
         updChanges.ensureCapacity(nDays);
+        for (int i = 0; i < nDays; ++i) {
+            newChanges.add(new Change(startDate.plusDays(i).toString()));
+            updChanges.add(new Change(startDate.plusDays(i).toString()));
+        }
+        changeLogs.clear();
+        changeLogs.trimToSize();
+        changeLogs.ensureCapacity(nDays); // will actually be a large multiple of nDays
     }
 
-    private long findMaatIdsToBackfill(final long startId, final long endId) {
+    private long findMaatIdsToBackFill(final long startId, final long endId) {
         return visitForwards(startId, endId, concorContribution -> {
+            ++countRowsInDateRange;
             final long maatId = concorContribution.repId();
             final CONTRIBUTIONS dto = xmlTransformService.fromXML(concorContribution.fullXml());
             if (dto == null) {
-                log.warn("findMaatIdsToBackfill: Failed to transform XML for concorContribution {}, maatId {}", concorContribution.id(), maatId);
+                log.warn("findMaatIdsToBackFill: Failed to transform XML for concorId {}, maatId {}", concorContribution.id(), maatId);
             } else if (dto.getFlag() == null) {
-                log.warn("findMaatIdsToBackfill: No flag for concorContribution {}, maatId {}", concorContribution.id(), maatId);
+                log.warn("findMaatIdsToBackFill: No flag for concorId {}, maatId {}", concorContribution.id(), maatId);
             } else if (dto.getFlag().equalsIgnoreCase("new")) {
-                maatIdToContribution.put(maatId, dto);
+                if (maatIdToContribution.containsKey(maatId)) {
+                    log.warn("findMaatIdsToBackFill: More than one 'new' for concorId {}, maatId {}", concorContribution.id(), maatId);
+                } else {
+                    maatIdToContribution.put(maatId, dto);
+                }
             } else if (dto.getFlag().equalsIgnoreCase("update")) {
                 if (!maatIdToContribution.containsKey(maatId)) {
-                    maatIdsToBackfill.add(maatId);
+                    if (!maatIdsToBackFill.contains(maatId)) {
+                        maatIdsToBackFill.add(maatId);
+                    } else {
+                        ++countRows1;
+                    }
                 } else {
-                    ++countRowsWithPredecessorsInDateRange;
+                    ++countRows2;
                 }
             } else {
-                log.warn("findMaatIdsToBackfill: Unknown flag {} for concorContribution {}, maatId {}", dto.getFlag(), concorContribution.id(), maatId);
+                log.warn("findMaatIdsToBackFill: Unknown flag {} for concorId {}, maatId {}", dto.getFlag(), concorContribution.id(), maatId);
             }
             return true;
         });
     }
 
-    private long slowBackfillMaatIds(final long startId) {
-        final AtomicInteger countMisses = new AtomicInteger(); // needed for 'effectively final' requirement in lambda.
-        return slowVisitBackwards(startId, 0, concorContribution -> {
-            final long maatId = concorContribution.repId();
-            final CONTRIBUTIONS dto = xmlTransformService.fromXML(concorContribution.fullXml());
-            countMisses.incrementAndGet();
-            if (dto == null) {
-                log.warn("slowBackfillMaatIds: Failed to transform XML for concorContribution {}, maatId {}", concorContribution.id(), maatId);
-            } else  {
-                if (maatIdsToBackfill.contains(maatId)) {
-                    maatIdToContribution.put(maatId, dto);
-                    maatIdsToBackfill.remove(maatId);
-                    if (maatIdsToBackfill.size() % 10 == 0) {
-                        log.info("slowBackfillMaatIds: {} maatIds left to back-fill ({} misses since last)", maatIdsToBackfill.size(), countMisses.get());
-                    }
-                    countMisses.set(0);
-                }
-            }
-            // switch to fast walk-back after 200 misses in a row (when there are 1000 or fewer maatIds to back-fill).
-            return !(maatIdsToBackfill.isEmpty() || (maatIdsToBackfill.size() <= 1000 && countMisses.get() >= 200));
-        });
-    }
-
-    private long fastBackfillMaatIds(final long startId) {
-        return fastVisitBackwards(startId, 0, concorContribution -> {
+    private long slowBackFillMaatIds(final long startId) {
+        return slowVisitBackwards(startId, 0L, concorContribution -> {
             final long maatId = concorContribution.repId();
             final CONTRIBUTIONS dto = xmlTransformService.fromXML(concorContribution.fullXml());
             if (dto == null) {
-                log.warn("fastBackfillMaatIds: Failed to transform XML for concorContribution {}, maatId {}", concorContribution.id(), maatId);
+                log.warn("slowBackFillMaatIds: Failed to transform XML for concorId {}, maatId {}", concorContribution.id(), maatId);
             } else  {
-                if (maatIdsToBackfill.contains(maatId)) {
+                if (maatIdsToBackFill.contains(maatId)) {
                     maatIdToContribution.put(maatId, dto);
-                    maatIdsToBackfill.remove(maatId);
-                    if (maatIdsToBackfill.size() % 10 == 0) {
-                        log.info("fastBackfillMaatIds: {} maatIds left to back-fill", maatIdsToBackfill.size());
+                    maatIdsToBackFill.remove(maatId);
+                    if (maatIdsToBackFill.size() % 100 == 0) {
+                        log.info("slowBackFillMaatIds: {} maatIds left to back-fill", maatIdsToBackFill.size());
                     }
                 }
             }
-            return !maatIdsToBackfill.isEmpty();
+            // switch to fast walk-back as soon as there are 990 or fewer maatIds to back-fill.
+            return !(maatIdsToBackFill.size() <= 990);
         });
     }
 
-    private long generateDailyCounts(LocalDate startDate, long startId, long endId) {
+    private long fastBackFillMaatIds(final long startId) {
+        return fastVisitBackwards(startId, 0L, concorContribution -> {
+            final long maatId = concorContribution.repId();
+            final CONTRIBUTIONS dto = xmlTransformService.fromXML(concorContribution.fullXml());
+            if (dto == null) {
+                log.warn("fastBackFillMaatIds: Failed to transform XML for concorId {}, maatId {}", concorContribution.id(), maatId);
+            } else  {
+                if (maatIdsToBackFill.contains(maatId)) {
+                    maatIdToContribution.put(maatId, dto);
+                    maatIdsToBackFill.remove(maatId);
+                    if (maatIdsToBackFill.size() % 10 == 0) {
+                        log.info("fastBackFillMaatIds: {} maatIds left to back-fill", maatIdsToBackFill.size());
+                    }
+                }
+            }
+            return !maatIdsToBackFill.isEmpty();
+        });
+    }
+
+    private long generateDailyCounts(final LocalDate startDate, final long startId, final long endId) {
         return visitForwards(startId, endId, concorContribution -> {
             final long maatId = concorContribution.repId();
             final CONTRIBUTIONS dto = xmlTransformService.fromXML(concorContribution.fullXml());
             if (dto == null) {
-                log.warn("generateDailyCounts: Failed to transform XML for concorContribution {}, maatId {}", concorContribution.id(), maatId);
+                log.warn("generateDailyCounts: Failed to transform XML for concorId {}, maatId {}", concorContribution.id(), maatId);
             } else {
                 final int dayIndex = (int) ChronoUnit.DAYS.between(startDate, concorContribution.dateCreated());
                 if (dayIndex < 0 || dayIndex >= newChanges.size()) {
-                    log.warn("generateDailyCounts: {} out of range for concorContribution {}, maatId {}", concorContribution.dateCreated(), concorContribution.id(), maatId);
+                    log.warn("generateDailyCounts: {} out of range for concorId {}, maatId {}", concorContribution.dateCreated(), concorContribution.id(), maatId);
                     return true;
                 }
                 if (dto.getFlag().equalsIgnoreCase("new")) {
-                    final Change counts = newChanges.get(dayIndex);
-                    counts.setSentRecords(counts.getSentRecords() + 1);
-                    if (changeService.compare(null, dto, counts)) {
-                        counts.setChangedRecords(counts.getChangedRecords() + 1);
+                    final ChangeLog log = new ChangeLog(concorContribution.dateCreated().toString());
+                    log.setMaatId(maatId);
+                    log.setNext_concorContributionId(concorContribution.id());
+                    log.setSentRecords(1);
+                    if (changeService.compare(null, dto, log)) {
+                        log.setChangedRecords(1);
                     }
+                    changeLogs.add(log);
+                    changeService.addTo(newChanges.get(dayIndex), log);
                 } else if (dto.getFlag().equalsIgnoreCase("update")) {
-                    final Change counts = updChanges.get(dayIndex);
-                    counts.setSentRecords(counts.getSentRecords() + 1);
                     final var prev = maatIdToContribution.get(maatId);
-                    if (changeService.compare(prev, dto, counts)) {
-                        counts.setChangedRecords(counts.getChangedRecords() + 1);
+                    final ChangeLog log = new ChangeLog(concorContribution.dateCreated().toString());
+                    log.setMaatId(maatId);
+                    log.setNext_concorContributionId(concorContribution.id());
+                    log.setPrev_concorContributionId(prev != null ? prev.getId() : -1L);
+                    log.setSentRecords(1);
+                    if (changeService.compare(prev, dto, log)) {
+                        log.setChangedRecords(1);
                     }
+                    changeLogs.add(log);
+                    changeService.addTo(updChanges.get(dayIndex), log);
                 } else {
-                    log.warn("generateDailyCounts: Unknown flag {} for concorContribution {}, maatId {}", dto.getFlag(), concorContribution.id(), maatId);
+                    log.warn("generateDailyCounts: Unknown flag {} for concorId {}, maatId {}", dto.getFlag(), concorContribution.id(), maatId);
                 }
                 maatIdToContribution.put(maatId, dto);
             }
@@ -233,7 +255,7 @@ class Runner implements ApplicationRunner {
             sliceLowId = contentLen > 0 ? content.get(0).id() : nextLowId;
             sliceHighId = contentLen > 0 ? content.get(contentLen - 1).id() : endId;
             nextLowId = sliceHighId + 1;
-            log.info("visitForwards: {} rows with {} <= id <= {}", contentLen, sliceLowId, sliceHighId);
+            log.info("visitForwards: {} rows with {} <= concorId <= {}", contentLen, sliceLowId, sliceHighId);
             for (final ConcorContribution concorContribution : content) {
                 if (!visitor.visit(concorContribution)) {
                     return concorContribution.id();
@@ -268,8 +290,8 @@ class Runner implements ApplicationRunner {
             contentLen = content.size();
             sliceHighId = contentLen > 0 ? content.get(0).id() : nextHighId;
             sliceLowId = contentLen > 0 ? content.get(contentLen - 1).id() : endId;
-            nextHighId = sliceLowId - 1;
-            log.info("slowVisitBackwards: {} rows with {} >= id >= {}", contentLen, sliceHighId, sliceLowId);
+            nextHighId = sliceLowId - 1L;
+            log.info("slowVisitBackwards: {} rows with {} >= concorId >= {}", contentLen, sliceHighId, sliceLowId);
             for (final ConcorContribution concorContribution : content) {
                 if (!visitor.visit(concorContribution)) {
                     return concorContribution.id();
@@ -299,13 +321,13 @@ class Runner implements ApplicationRunner {
 
         do {
             slice = concorRepository.findByIdBetweenAndStatusAndRepIdInOrderByIdDesc(
-                    endId, nextHighId, "SENT", maatIdsToBackfill, Pageable.ofSize(BATCH_SIZE));
+                    endId, nextHighId, "SENT", maatIdsToBackFill, Pageable.ofSize(BATCH_SIZE));
             content = slice.getContent();
             contentLen = content.size();
             sliceHighId = contentLen > 0 ? content.get(0).id() : nextHighId;
             sliceLowId = contentLen > 0 ? content.get(contentLen - 1).id() : endId;
-            nextHighId = sliceLowId - 1;
-            log.info("fastVisitBackwards: {} rows with {} >= id >= {}", contentLen, sliceHighId, sliceLowId);
+            nextHighId = sliceLowId - 1L;
+            log.info("fastVisitBackwards: {} rows with {} >= concorId >= {}", contentLen, sliceHighId, sliceLowId);
             for (final ConcorContribution concorContribution : content) {
                 if (!visitor.visit(concorContribution)) {
                     return concorContribution.id();
