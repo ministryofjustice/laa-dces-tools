@@ -49,7 +49,7 @@ class Runner implements ApplicationRunner {
     private final CsvOutputService csvoutput;
 
     private final Set<Long> maatIdsToBackFill = new TreeSet<>();
-    private final Map<Long, CONTRIBUTIONS> maatIdToContribution = new TreeMap<>();
+    private final Map<Long, ConcorHolder> maatIdToContribution = new TreeMap<>();
     private final ArrayList<Change> newChanges = new ArrayList<>();
     private final ArrayList<Change> updChanges = new ArrayList<>();
     private final ArrayList<ChangeLog> changeLogs = new ArrayList<>();
@@ -129,7 +129,7 @@ class Runner implements ApplicationRunner {
                 if (maatIdToContribution.containsKey(maatId)) {
                     log.warn("findMaatIdsToBackFill: More than one 'new' for concorId {}, maatId {}", concorContribution.id(), maatId);
                 } else {
-                    maatIdToContribution.put(maatId, dto);
+                    maatIdToContribution.put(maatId, ConcorHolder.of(concorContribution.id(), dto));
                 }
             } else if (dto.getFlag().equalsIgnoreCase("update")) {
                 if (!maatIdToContribution.containsKey(maatId)) {
@@ -156,7 +156,7 @@ class Runner implements ApplicationRunner {
                 log.warn("slowBackFillMaatIds: Failed to transform XML for concorId {}, maatId {}", concorContribution.id(), maatId);
             } else  {
                 if (maatIdsToBackFill.contains(maatId)) {
-                    maatIdToContribution.put(maatId, dto);
+                    maatIdToContribution.put(maatId, ConcorHolder.of(concorContribution.id(), dto));
                     maatIdsToBackFill.remove(maatId);
                     if (maatIdsToBackFill.size() % 100 == 0) {
                         log.info("slowBackFillMaatIds: {} maatIds left to back-fill", maatIdsToBackFill.size());
@@ -176,7 +176,7 @@ class Runner implements ApplicationRunner {
                 log.warn("fastBackFillMaatIds: Failed to transform XML for concorId {}, maatId {}", concorContribution.id(), maatId);
             } else  {
                 if (maatIdsToBackFill.contains(maatId)) {
-                    maatIdToContribution.put(maatId, dto);
+                    maatIdToContribution.put(maatId, ConcorHolder.of(concorContribution.id(), dto));
                     maatIdsToBackFill.remove(maatId);
                     if (maatIdsToBackFill.size() % 10 == 0) {
                         log.info("fastBackFillMaatIds: {} maatIds left to back-fill", maatIdsToBackFill.size());
@@ -214,9 +214,9 @@ class Runner implements ApplicationRunner {
                     final ChangeLog log = new ChangeLog(concorContribution.dateCreated().toString());
                     log.setMaatId(maatId);
                     log.setNext_concorContributionId(concorContribution.id());
-                    log.setPrev_concorContributionId(prev != null ? prev.getId() : -1L);
+                    log.setPrev_concorContributionId(prev != null ? prev.concorContributionId() : -1L);
                     log.setSentRecords(1);
-                    if (changeService.compare(prev, dto, log)) {
+                    if (changeService.compare(prev != null ? prev.contributions() : null, dto, log)) {
                         log.setChangedRecords(1);
                     }
                     changeLogs.add(log);
@@ -224,7 +224,7 @@ class Runner implements ApplicationRunner {
                 } else {
                     log.warn("generateDailyCounts: Unknown flag {} for concorId {}, maatId {}", dto.getFlag(), concorContribution.id(), maatId);
                 }
-                maatIdToContribution.put(maatId, dto);
+                maatIdToContribution.put(maatId, ConcorHolder.of(concorContribution.id(), dto));
             }
             return true;
         });
@@ -347,5 +347,18 @@ class Runner implements ApplicationRunner {
          * @return true to continue visiting, false to stop.
          */
         boolean visit(ConcorContribution concorContribution);
+    }
+
+    /**
+     * This is needed so we can keep track of the predecessor concorContributionId.
+     * Note that CONTRIBUTIONS#getId() is the contribution ID, which is NOT the same as the concorContributionId :(.
+     *
+     * @param concorContributionId long Store the concor_contributions.id value
+     * @param contributions CONTRIBUTIONS Store the concor_contributions.full_xml value as a bean.
+     */
+    record ConcorHolder(long concorContributionId, CONTRIBUTIONS contributions) {
+        static ConcorHolder of(final long concorContributionId, final CONTRIBUTIONS contributions) {
+            return new ConcorHolder(concorContributionId, contributions);
+        }
     }
 }
