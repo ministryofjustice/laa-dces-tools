@@ -54,9 +54,9 @@ class Runner implements ApplicationRunner {
     private final ArrayList<Change> updChanges = new ArrayList<>();
     private final ArrayList<ChangeLog> changeLogs = new ArrayList<>();
 
-    private int countRowsInDateRange = 0;
-    private int countRows1 = 0;
-    private int countRows2 = 0;
+    private int countAllRowsInDateRange = 0;
+    private int countRowsDuplicateBackFills = 0;
+    private int countRowsWithPredecessorInDateRange = 0;
 
     /**
      * Main runner method, just iterates over the database table, calling #examineConcorContribution() for each row.
@@ -74,8 +74,8 @@ class Runner implements ApplicationRunner {
 
         log.info("run: Finding maatIds in range {} <= concorId <= {}", startId, endId);
         findMaatIdsToBackFill(startId, endId);
-        log.info("run: Found {} new maatIds, {} maatIds to back-fill, {} concorIds in range, {} concorIds #1, {} concorIds #2",
-                maatIdToContribution.size(), maatIdsToBackFill.size(), countRowsInDateRange, countRows1, countRows2);
+        log.info("run: Found {} new maatIds, {} maatIds to back-fill, {} concorIds with dup maatIds to back-fill, {} concorIds with predecessor in range; {} all concorIds in range",
+                maatIdToContribution.size(), maatIdsToBackFill.size(), countRowsDuplicateBackFills, countRowsWithPredecessorInDateRange, countAllRowsInDateRange);
 
         if (!maatIdsToBackFill.isEmpty()) {
             final long lastId = slowBackFillMaatIds(startId - 1L);
@@ -116,9 +116,9 @@ class Runner implements ApplicationRunner {
         changeLogs.ensureCapacity(nDays); // will actually be a large multiple of nDays
     }
 
-    private long findMaatIdsToBackFill(final long startId, final long endId) {
-        return visitForwards(startId, endId, concorContribution -> {
-            ++countRowsInDateRange;
+    private void findMaatIdsToBackFill(final long startId, final long endId) {
+        visitForwards(startId, endId, concorContribution -> {
+            ++countAllRowsInDateRange;
             final long maatId = concorContribution.repId();
             final CONTRIBUTIONS dto = xmlTransformService.fromXML(concorContribution.fullXml());
             if (dto == null) {
@@ -136,10 +136,10 @@ class Runner implements ApplicationRunner {
                     if (!maatIdsToBackFill.contains(maatId)) {
                         maatIdsToBackFill.add(maatId);
                     } else {
-                        ++countRows1;
+                        ++countRowsDuplicateBackFills;
                     }
                 } else {
-                    ++countRows2;
+                    ++countRowsWithPredecessorInDateRange;
                 }
             } else {
                 log.warn("findMaatIdsToBackFill: Unknown flag {} for concorId {}, maatId {}", dto.getFlag(), concorContribution.id(), maatId);
@@ -187,8 +187,8 @@ class Runner implements ApplicationRunner {
         });
     }
 
-    private long generateDailyCounts(final LocalDate startDate, final long startId, final long endId) {
-        return visitForwards(startId, endId, concorContribution -> {
+    private void generateDailyCounts(final LocalDate startDate, final long startId, final long endId) {
+        visitForwards(startId, endId, concorContribution -> {
             final long maatId = concorContribution.repId();
             final CONTRIBUTIONS dto = xmlTransformService.fromXML(concorContribution.fullXml());
             if (dto == null) {
@@ -236,9 +236,8 @@ class Runner implements ApplicationRunner {
      * @param startId start ID to walk forward from
      * @param endId end ID to finish walking forward until
      * @param visitor the RecordVisitor to call for each record visited
-     * @return the ID of the last record visited
      */
-    private long visitForwards(final long startId, final long endId, final RecordVisitor visitor) {
+    private void visitForwards(final long startId, final long endId, final RecordVisitor visitor) {
         assert startId <= endId;
 
         long nextLowId = startId;
@@ -258,11 +257,10 @@ class Runner implements ApplicationRunner {
             log.info("visitForwards: {} rows with {} <= concorId <= {}", contentLen, sliceLowId, sliceHighId);
             for (final ConcorContribution concorContribution : content) {
                 if (!visitor.visit(concorContribution)) {
-                    return concorContribution.id();
+                    return;
                 }
             }
         } while (slice.hasNext() && contentLen > 0 && nextLowId <= endId);
-        return endId;
     }
 
     /**
