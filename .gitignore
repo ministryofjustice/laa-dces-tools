@@ -1,37 +1,46 @@
-HELP.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
+# Exclude OS-specific junk files.
+.DS_Store
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+### Exclude env files - may contain confidential env-vars.
+.env*
+*.env
 
-### IntelliJ IDEA ###
-.idea
+### Exclude the Gradle cache, etc.
+.gradle/
+
+### Bypass any exclude *.jar exclusions for the Gradle Wrapper JAR.
+!**/gradle/wrapper/gradle-wrapper.jar
+
+### Exclude IntelliJ workspace, project and module files - may contain confidential env-vars.
+.idea/
 *.iws
 *.iml
 *.ipr
+
+### Exclude .log log files - except source files.
+*.log
+!**/src/main/**/*.log
+!**/src/test/**/*.log
+
+### Exclude .run run configurations - may contain confidential env-vars.
+.run/
+
+### Exclude Visual Studio Code workspace and project files - may contain confidential env-vars.
+.vscode/
+
+### IDE or build tool build output directories - except source files.
+bin/
+build/
+dist/
 out/
+target/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+!**/src/main/**/build/
+!**/src/test/**/build/
+!**/src/main/**/dist/
+!**/src/test/**/dist/
 !**/src/main/**/out/
 !**/src/test/**/out/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
-.vscode/
+!**/src/main/**/target/
+!**/src/test/**/target/

@@ -9,7 +9,7 @@ Enforcement Service (DCES) team of LAA Digital, in the Ministry
 of Justice's STG.
 
 For example, simple command-line tools for one-time data
-verification and/or data preparation.
+verification, analysis or preparation.
 
 ## Verification tools
 
@@ -17,3 +17,10 @@ verification and/or data preparation.
   application to verify serialization and de-serialization of
   XML Concor Contribution records into both XML and JSON
   (with validation of the intermediate JSON against a schema).
+
+## Analysis tools
+
+* [`deltaconcor`](deltaconcor) - Java / Spring Boot console
+  application to produce CSV report on when changes to XML
+  Concor Contribution records occurred (and which elements
+  were changed).

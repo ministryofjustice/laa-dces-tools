@@ -4,7 +4,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.6"
 }
 
-group = "uk.gov.justice.laa.dces"
+group = "uk.gov.justice.laadces"
 version = "0.0.1-SNAPSHOT"
 
 java {
@@ -24,8 +24,6 @@ repositories {
 }
 
 dependencies {
-    //implementation(platform("org.springframework.boot:spring-boot-dependencies:3.3.4"))
-
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 
@@ -44,7 +42,7 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testRuntimeOnly("com.h2database:h2")
+    testRuntimeOnly("com.h2database:h2") /* allow tests to run without Oracle DB */
 }
 
 tasks.withType<Test> {

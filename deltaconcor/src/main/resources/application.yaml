@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: deltaconcor
+
+### Just set the environment variables below, no need to uncomment this YAML.
+#  datasource:
+#    password: ${SPRING_DATASOURCE_PASSWORD}
+#    url: ${SPRING_DATASOURCE_URL}
+#    username: ${SPRING_DATASOURCE_USERNAME}
