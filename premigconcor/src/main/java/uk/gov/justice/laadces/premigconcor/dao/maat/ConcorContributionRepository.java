@@ -9,6 +9,7 @@ import uk.gov.justice.laadces.premigconcor.dao.integration.CaseMigration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 @Repository
@@ -21,7 +22,7 @@ public class ConcorContributionRepository {
         this.maat = maat;
     }
 
-    public List<CaseMigration> findLatestIdsByMaatIds(List<Long> maatIds) {
+    public List<CaseMigration> findLatestIdsByMaatIds(final List<Long> maatIds, final Set<Long> missing) {
         final int count = maatIds.size();
         final var cms = new ArrayList<CaseMigration>(count);
         for (int i = 0; i < count; i += BATCH_SIZE) {
@@ -34,11 +35,12 @@ public class ConcorContributionRepository {
                         final long concorContributionId = rs.getLong(1);
                         final long maatId = rs.getLong(2);
                         set.remove(maatId);
-                        return CaseMigration.ofConcorContribution(concorContributionId, maatId, rowNum);
+                        return CaseMigration.ofConcorContribution(concorContributionId, maatId, (long) rowNum);
                     })
                     .list());
             if (!set.isEmpty()) {
                 log.warn("{} maatIds were not found: {}", set.size(), set);
+                missing.addAll(set);
             }
         }
         return cms;

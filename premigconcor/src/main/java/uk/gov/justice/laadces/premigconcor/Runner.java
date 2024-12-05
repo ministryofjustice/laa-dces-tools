@@ -6,10 +6,13 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.laadces.premigconcor.dao.integration.CsvOutputService;
+import uk.gov.justice.laadces.premigconcor.dao.migration.MaatId;
+import uk.gov.justice.laadces.premigconcor.service.CsvOutputService;
 import uk.gov.justice.laadces.premigconcor.dao.maat.ConcorContributionRepository;
 import uk.gov.justice.laadces.premigconcor.dao.maat.FdcContributionRepository;
 import uk.gov.justice.laadces.premigconcor.dao.migration.MigrationScopeRepository;
+
+import java.util.TreeSet;
 
 /**
  * ApplicationRunner class that examines the data in the database.
@@ -28,12 +31,16 @@ class Runner implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         log.info("run() was called");
         var maatIds = migrationScopeRepository.findAll();
-        log.info("Queried {} maatid from migration database", maatIds.size());
-        var cmsConcor = concorContributionRepository.findLatestIdsByMaatIds(maatIds);
-        log.info("Queried {} concor cases from maat database", cmsConcor.size());
-        var cmsFdc = fdcContributionRepository.findLatestIdsByMaatIds(maatIds);
-        log.info("Queried {} fdc cases from maat database", cmsFdc.size());
-        csvOutputService.writeCaseMigrations("/tmp/premigconcor-ccr.csv", cmsConcor);
-        csvOutputService.writeCaseMigrations("/tmp/premigconcor-fdc.csv", cmsFdc);
+        log.info("Queried {} maatIds from migration database", maatIds.size());
+        var missingConcorMaatIds = new TreeSet<Long>();
+        var cmsConcor = concorContributionRepository.findLatestIdsByMaatIds(maatIds, missingConcorMaatIds);
+        log.info("Queried {} concor cases from maat database, {} missing", cmsConcor.size(), missingConcorMaatIds.size());
+        var missingFdcMaatIds = new TreeSet<Long>();
+        var cmsFdc = fdcContributionRepository.findLatestIdsByMaatIds(maatIds, missingFdcMaatIds);
+        log.info("Queried {} fdc cases from maat database, {} missing", cmsFdc.size(), missingFdcMaatIds.size());
+        csvOutputService.writeCaseMigrations("/tmp/premigconcor-concorCases.csv", cmsConcor);
+        csvOutputService.writeMaatIds("/tmp/premigconcor-concorMissing.csv", MaatId.of(missingConcorMaatIds));
+        csvOutputService.writeCaseMigrations("/tmp/premigconcor-fdcCases.csv", cmsFdc);
+        csvOutputService.writeMaatIds("/tmp/premigconcor-fdcMissing.csv", MaatId.of(missingFdcMaatIds));
     }
 }
