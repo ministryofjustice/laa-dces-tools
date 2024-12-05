@@ -17,13 +17,18 @@ jobs:
           java-version: "17"
           distribution: "corretto"
       - uses: gradle/actions/setup-gradle@v4
-      - name: verifyconcor
-        run: |
-          cd verifyconcor
-          ./gradlew clean build
-          cd ..
       - name: deltaconcor
         run: |
           cd deltaconcor
+          ./gradlew clean build
+          cd ..
+      - name: premigconcor
+        run: |
+          cd premigconcor
+          ./gradlew clean build
+          cd ..
+      - name: verifyconcor
+        run: |
+          cd verifyconcor
           ./gradlew clean build
           cd ..
