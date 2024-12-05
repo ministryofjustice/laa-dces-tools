@@ -35,7 +35,7 @@ public class FdcContributionRepository {
                         final long fdcId = rs.getLong(1);
                         final long maatId = rs.getLong(2);
                         set.remove(maatId);
-                        return CaseMigration.ofFdcContribution(fdcId, maatId, (long) rowNum);
+                        return CaseMigration.ofFdcContribution(maatId, fdcId, (long) rowNum);
                     })
                     .list());
             if (!set.isEmpty()) {

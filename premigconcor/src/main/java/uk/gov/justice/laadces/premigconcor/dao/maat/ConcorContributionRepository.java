@@ -35,7 +35,7 @@ public class ConcorContributionRepository {
                         final long concorContributionId = rs.getLong(1);
                         final long maatId = rs.getLong(2);
                         set.remove(maatId);
-                        return CaseMigration.ofConcorContribution(concorContributionId, maatId, (long) rowNum);
+                        return CaseMigration.ofConcorContribution(maatId, concorContributionId, (long) rowNum);
                     })
                     .list());
             if (!set.isEmpty()) {
