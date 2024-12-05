@@ -6,6 +6,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.laadces.premigconcor.dao.integration.CaseMigrationRepository;
 import uk.gov.justice.laadces.premigconcor.dao.migration.MaatId;
 import uk.gov.justice.laadces.premigconcor.service.CsvOutputService;
 import uk.gov.justice.laadces.premigconcor.dao.maat.ConcorContributionRepository;
@@ -25,22 +26,28 @@ class Runner implements ApplicationRunner {
     private final MigrationScopeRepository migrationScopeRepository;
     private final ConcorContributionRepository concorContributionRepository;
     private final FdcContributionRepository fdcContributionRepository;
+    private final CaseMigrationRepository caseMigrationRepository;
     private final CsvOutputService csvOutputService;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        log.info("run() was called");
+        log.info("Entering run...");
         var maatIds = migrationScopeRepository.findAll();
         log.info("Queried {} maatIds from migration database", maatIds.size());
+
         var missingConcorMaatIds = new TreeSet<Long>();
         var cmsConcor = concorContributionRepository.findLatestIdsByMaatIds(maatIds, missingConcorMaatIds);
         log.info("Queried {} concor cases from maat database, {} missing", cmsConcor.size(), missingConcorMaatIds.size());
+        csvOutputService.writeCaseMigrations("/tmp/premigconcor-concorCases.csv", cmsConcor);
+        csvOutputService.writeMaatIds("/tmp/premigconcor-concorMissing.csv", MaatId.of(missingConcorMaatIds));
+        caseMigrationRepository.saveAll(cmsConcor);
+
         var missingFdcMaatIds = new TreeSet<Long>();
         var cmsFdc = fdcContributionRepository.findLatestIdsByMaatIds(maatIds, missingFdcMaatIds);
         log.info("Queried {} fdc cases from maat database, {} missing", cmsFdc.size(), missingFdcMaatIds.size());
-        csvOutputService.writeCaseMigrations("/tmp/premigconcor-concorCases.csv", cmsConcor);
-        csvOutputService.writeMaatIds("/tmp/premigconcor-concorMissing.csv", MaatId.of(missingConcorMaatIds));
         csvOutputService.writeCaseMigrations("/tmp/premigconcor-fdcCases.csv", cmsFdc);
         csvOutputService.writeMaatIds("/tmp/premigconcor-fdcMissing.csv", MaatId.of(missingFdcMaatIds));
+        caseMigrationRepository.saveAll(cmsFdc);
+        log.info("Exiting run...");
     }
 }
