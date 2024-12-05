@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: premigconcor
+
+### Just set the environment variables below, no need to uncomment this YAML.
+### The primary/default datasource (spring.datasource.*) should be pointed at the DRC integration database.
+#  datasource:
+#    password: ${SPRING_DATASOURCE_PASSWORD}
+#    url: ${SPRING_DATASOURCE_URL}
+#    username: ${SPRING_DATASOURCE_USERNAME}
+
+  datasource:
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+
+migration:
+  datasource:
+    password: ${MIGRATION_DATASOURCE_PASSWORD}
+    url: ${MIGRATION_DATASOURCE_USERNAME}
+    username: ${MIGRATION_DATASOURCE_USERNAME}
+
+maat:
+  datasource:
+    password: ${MAAT_DATASOURCE_PASSWORD}
+    url: ${MAAT_DATASOURCE_URL}
+    username: ${MAAT_DATASOURCE_USERNAME}

@@ -24,3 +24,12 @@ verification, analysis or preparation.
   application to produce CSV report on when changes to XML
   Concor Contribution records occurred (and which elements
   were changed).
+
+## Preparation tools
+
+* [`premigconcor`](premigconcor) - Java / Spring Boot console
+  application to populate a table in the DRC integration
+  database with the IDs of the latest Concor Contribution
+  for a large set of Rep IDs (maatIds) as a preparation step
+  before iterating over these Concor Contributions to migrate
+  them to the new provider (using DRC integration code).
