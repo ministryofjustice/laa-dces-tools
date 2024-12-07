@@ -15,7 +15,11 @@ public class MigrationScopeRepository {
     }
 
     public List<Long> findAll() {
-        // varchar column that may contain junk.
-        return migration.sql("SELECT DISTINCT CAST(maatid AS INTEGER) FROM marston.migrationscope WHERE maatid ~ '^[1-9][0-9]*$' ORDER BY 1").query(Long.class).list();
+        // varchar column that may contain junk; no need to order as would not be numeric order anyway.
+        return migration.sql("""
+                SELECT DISTINCT CAST(clientcasereference AS INTEGER) AS maat_id
+                FROM transform.laacasedetails
+                WHERE clientcasereference ~ '^[1-9][0-9]*$'
+                """).query(Long.class).list();
     }
 }
