@@ -14,7 +14,7 @@ import uk.gov.justice.laadces.premigconcor.dao.migration.MaatId;
 import uk.gov.justice.laadces.premigconcor.dao.migration.MigrationScopeRepository;
 import uk.gov.justice.laadces.premigconcor.service.CsvOutputService;
 
-import java.util.HashSet;
+import java.util.HashSet; 
 import java.util.TreeSet;
 
 /**
@@ -25,6 +25,12 @@ import java.util.TreeSet;
 @RequiredArgsConstructor
 @Slf4j
 class Runner implements ApplicationRunner {
+    // File paths to write CSV output to (for validation).
+    private static final String PATH_CSV_OUTPUT_FOUND_CONCOR = "./premigconcor-concorCases.csv";
+    private static final String PATH_CSV_OUTPUT_MISSING_CONCOR = "./premigconcor-concorMissing.csv";
+    private static final String PATH_CSV_OUTPUT_FOUND_FDC = "./premigconcor-fdcCases.csv";
+    private static final String PATH_CSV_OUTPUT_MISSING_FDC = "./premigconcor-fdcMissing.csv";
+
     private final MigrationScopeRepository migrationScopeRepository;
     private final ConcorContributionRepository concorContributionRepository;
     private final FdcContributionRepository fdcContributionRepository;
@@ -41,15 +47,15 @@ class Runner implements ApplicationRunner {
         final var missingConcors = new TreeSet<Long>();
         concorContributionRepository.addLatestIdsByMaatIds(maatIds, foundConcors, missingConcors);
         log.info("Found {} concor cases from maat database, and missing {} maatIds", foundConcors.size(), missingConcors.size());
-        csvOutputService.writeCaseMigrations("/tmp/premigconcor-concorCases.csv", foundConcors);
-        csvOutputService.writeMaatIds("/tmp/premigconcor-concorMissing.csv", MaatId.of(missingConcors));
+        csvOutputService.writeCaseMigrations(PATH_CSV_OUTPUT_FOUND_CONCOR, foundConcors);
+        csvOutputService.writeMaatIds(PATH_CSV_OUTPUT_MISSING_CONCOR, MaatId.of(missingConcors));
 
         final var foundFdcs = new HashSet<CaseMigration>();
         final var missingFdcs = new TreeSet<Long>();
         fdcContributionRepository.addLatestIdsByMaatIds(maatIds, foundFdcs, missingFdcs);
         log.info("Found {} fdc cases from maat database, and missing {} maatIds", foundFdcs.size(), missingFdcs.size());
-        csvOutputService.writeCaseMigrations("/tmp/premigconcor-fdcCases.csv", foundFdcs);
-        csvOutputService.writeMaatIds("/tmp/premigconcor-fdcMissing.csv", MaatId.of(missingFdcs));
+        csvOutputService.writeCaseMigrations(PATH_CSV_OUTPUT_FOUND_FDC, foundFdcs);
+        csvOutputService.writeMaatIds(PATH_CSV_OUTPUT_MISSING_FDC, MaatId.of(missingFdcs));
 
         final var found = new HashSet<CaseMigration>();
         found.addAll(foundConcors);
