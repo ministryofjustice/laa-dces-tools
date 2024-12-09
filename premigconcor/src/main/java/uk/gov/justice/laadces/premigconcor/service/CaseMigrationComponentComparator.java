@@ -1,4 +1,6 @@
-package uk.gov.justice.laadces.premigconcor.dao.integration;
+package uk.gov.justice.laadces.premigconcor.service;
+
+import uk.gov.justice.laadces.premigconcor.dao.integration.CaseMigration;
 
 import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
