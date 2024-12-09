@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.Collection;
 
@@ -42,19 +43,43 @@ public class CaseMigrationRepository {
     public void saveAll(final Collection<CaseMigration> caseMigrations) {
         integration.batchUpdate("""
                 INSERT INTO case_migration (maat_id, record_type, concor_contribution_id, fdc_id,
-                                            batch_id, is_process, processed_date, http_status, payload)
+                                            batch_id, is_processed, processed_date, http_status, payload)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, caseMigrations, BATCH_SIZE, (stmt, caseMigration) -> {
             stmt.setLong(1, caseMigration.maatId());
             stmt.setString(2, caseMigration.recordType());
             stmt.setLong(3, caseMigration.concorContributionId());
             stmt.setLong(4, caseMigration.fdcId());
-            stmt.setLong(5, caseMigration.batchId());
-            stmt.setBoolean(6, caseMigration.isProcessed());
+            final Long batchId = caseMigration.batchId();
+            if (batchId != null) {
+                stmt.setLong(5, caseMigration.batchId());
+            } else {
+                stmt.setNull(5, Types.INTEGER);
+            }
+            final Boolean isProcessed = caseMigration.isProcessed();
+            if (isProcessed != null) {
+                stmt.setBoolean(6, caseMigration.isProcessed());
+            } else {
+                stmt.setNull(6, Types.BOOLEAN);
+            }
             final LocalDateTime processedDate = caseMigration.processedDate();
-            stmt.setTimestamp(7, processedDate != null ? Timestamp.valueOf(processedDate) : null);
-            stmt.setInt(8, caseMigration.httpStatus());
-            stmt.setString(9, caseMigration.payload());
+            if (processedDate != null) {
+                stmt.setTimestamp(7, Timestamp.valueOf(processedDate));
+            } else {
+                stmt.setNull(7, Types.TIMESTAMP);
+            }
+            final Integer httpStatus = caseMigration.httpStatus();
+            if (httpStatus != null) {
+                stmt.setInt(8, httpStatus);
+            } else {
+                stmt.setNull(8, Types.INTEGER);
+            }
+            final String payload = caseMigration.payload();
+            if (payload != null) {
+                stmt.setString(9, caseMigration.payload());
+            } else {
+                stmt.setNull(9, Types.VARCHAR);
+            }
         });
     }
 }

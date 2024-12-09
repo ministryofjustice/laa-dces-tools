@@ -56,8 +56,10 @@ class Runner implements ApplicationRunner {
         found.addAll(foundFdcs);
         log.info("Checking {} case-migrations for existing duplicates", found.size());
         caseMigrationRepository.removeExisting(found);
+
         log.info("Persisting {} non-duplicate case-migrations", found.size());
         caseMigrationRepository.saveAll(found);
+
         log.info("Exiting run...");
     }
 }

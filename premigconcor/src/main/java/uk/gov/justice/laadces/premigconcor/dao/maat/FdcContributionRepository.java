@@ -29,7 +29,7 @@ public class FdcContributionRepository {
                         SELECT MAX(id), rep_id
                         FROM togdata.fdc_contributions
                         WHERE rep_id IN (:maatIds)
-                        GROUP BY rep_i
+                        GROUP BY rep_id
                         """)
                     .paramSource(paramSource)
                     .query((rs, rowNum) -> {
