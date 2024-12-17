@@ -2,22 +2,61 @@ package uk.gov.justice.laadces.premigconcor.dao.integration;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 @Repository
 @Slf4j
 public class CaseMigrationRepository {
     private static final int BATCH_SIZE = 990;
-    private final JdbcTemplate integration;
+    private final NamedParameterJdbcTemplate integration;
 
-    public CaseMigrationRepository(@Qualifier("integrationJdbcTemplate") final JdbcTemplate integration) {
+    public CaseMigrationRepository(@Qualifier("integrationNamedParameterJdbcTemplate") final NamedParameterJdbcTemplate integration) {
         this.integration = integration;
+    }
+
+    public void deleteUnprocessed(final List<Long> maatIds) {
+        final var partitions = partition(maatIds, BATCH_SIZE);
+        final var batchArgs = partitions.stream()
+                .map(partition -> new MapSqlParameterSource("maatIds", partition))
+                .toArray(MapSqlParameterSource[]::new);
+        final int[] rowsDeleted = integration.batchUpdate("""
+                DELETE
+                FROM case_migration
+                WHERE is_processed <> TRUE
+                AND maat_id IN (:maatIds)
+                """, batchArgs);
+        log.info("deleteUnprocessed: Deleted {} rows", Arrays.stream(rowsDeleted).sum());
+    }
+
+    /**
+     * Break a list of elements of size >= 1 into multiple lists, each having a given length
+     * (except possibly the last list, which may be smaller).
+     *
+     * @param input The large list to break into sublists.
+     * @param partitionSize The desired length of the sublists.
+     * @return A list of lists (each of size partitionSize, except perhaps the last).
+     * @param <T> The type of the list.
+     */
+    <T> List<List<T>> partition(final List<T> input, final int partitionSize) {
+        if (partitionSize < 1) {
+            throw new IllegalArgumentException("partitionSize must be >= 1");
+        }
+        final int inputSize = input.size();
+        final var output = new ArrayList<List<T>>((inputSize + partitionSize - 1) / partitionSize);
+        for (int index = 0; index < inputSize; index += partitionSize) {
+            output.add(input.subList(index, Math.min(index + partitionSize, inputSize)));
+        }
+        return output;
     }
 
     public void removeExisting(final Collection<CaseMigration> caseMigrations) {
@@ -41,7 +80,7 @@ public class CaseMigrationRepository {
     }
 
     public void saveAll(final Collection<CaseMigration> caseMigrations) {
-        integration.batchUpdate("""
+        final int[][] rowsInserted = integration.getJdbcOperations().batchUpdate("""
                 INSERT INTO case_migration (maat_id, record_type, concor_contribution_id, fdc_id,
                                             batch_id, is_processed, processed_date, http_status, payload)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -81,5 +120,6 @@ public class CaseMigrationRepository {
                 stmt.setNull(9, Types.VARCHAR);
             }
         });
+        log.info("saveAll: Inserted {} rows", Arrays.stream(rowsInserted).flatMapToInt(Arrays::stream).sum());
     }
 }
