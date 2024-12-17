@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 import javax.sql.DataSource;
@@ -76,7 +76,7 @@ public class DataSourceConfig {
      */
     @Bean
     @Primary
-    public JdbcTemplate integrationJdbcTemplate(@Qualifier("integrationDataSource") DataSource integrationDataSource) {
-        return new JdbcTemplate(integrationDataSource);
+    public NamedParameterJdbcTemplate integrationNamedParameterJdbcTemplate(@Qualifier("integrationDataSource") DataSource integrationDataSource) {
+        return new NamedParameterJdbcTemplate(integrationDataSource);
     }
 }
