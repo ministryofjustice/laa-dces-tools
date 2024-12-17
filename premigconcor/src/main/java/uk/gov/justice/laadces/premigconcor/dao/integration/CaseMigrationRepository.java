@@ -47,7 +47,7 @@ public class CaseMigrationRepository {
      * @return A list of lists (each of size partitionSize, except perhaps the last).
      * @param <T> The type of the list.
      */
-    private <T> List<List<T>> partition(final List<T> input, final int partitionSize) {
+    <T> List<List<T>> partition(final List<T> input, final int partitionSize) {
         if (partitionSize < 1) {
             throw new IllegalArgumentException("partitionSize must be >= 1");
         }
