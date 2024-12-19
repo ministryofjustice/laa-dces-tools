@@ -14,7 +14,7 @@ import uk.gov.justice.laadces.premigconcor.dao.migration.MaatId;
 import uk.gov.justice.laadces.premigconcor.dao.migration.MigrationScopeRepository;
 import uk.gov.justice.laadces.premigconcor.service.CsvOutputService;
 
-import java.util.HashSet; 
+import java.util.HashSet;
 import java.util.TreeSet;
 
 /**
@@ -56,6 +56,9 @@ class Runner implements ApplicationRunner {
         log.info("Found {} fdc cases from maat database, and missing {} maatIds", foundFdcs.size(), missingFdcs.size());
         csvOutputService.writeCaseMigrations(PATH_CSV_OUTPUT_FOUND_FDC, foundFdcs);
         csvOutputService.writeMaatIds(PATH_CSV_OUTPUT_MISSING_FDC, MaatId.of(missingFdcs));
+
+        log.info("Checking {} maatIds for unprocessed case-migrations", maatIds.size());
+        caseMigrationRepository.deleteUnprocessed(maatIds);
 
         final var found = new HashSet<CaseMigration>();
         found.addAll(foundConcors);
