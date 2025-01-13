@@ -20,6 +20,7 @@ public class MigrationScopeRepository {
                 SELECT DISTINCT CAST(clientcasereference AS INTEGER) AS maat_id
                 FROM transform.laacasedetails
                 WHERE clientcasereference ~ '^[1-9][0-9]*$'
+                ORDER BY 1 DESC
                 """).query(Long.class).list();
     }
 }
