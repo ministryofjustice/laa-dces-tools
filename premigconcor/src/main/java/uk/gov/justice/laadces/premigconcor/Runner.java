@@ -30,6 +30,7 @@ class Runner implements ApplicationRunner {
     private static final String PATH_CSV_OUTPUT_MISSING_CONCOR = "./premigconcor-concorMissing.csv";
     private static final String PATH_CSV_OUTPUT_FOUND_FDC = "./premigconcor-fdcCases.csv";
     private static final String PATH_CSV_OUTPUT_MISSING_FDC = "./premigconcor-fdcMissing.csv";
+    private static final int MAX_COUNT_MAAT_IDS = 5000; // truncate data set if non-negative.
 
     private final MigrationScopeRepository migrationScopeRepository;
     private final ConcorContributionRepository concorContributionRepository;
@@ -40,8 +41,10 @@ class Runner implements ApplicationRunner {
     @Override
     public void run(final ApplicationArguments args) throws Exception {
         log.info("Entering run...");
-        final var maatIds = migrationScopeRepository.findAll();
-        log.info("Found {} maatIds from migration database", maatIds.size());
+        final var allMaatIds = migrationScopeRepository.findAll();
+        log.info("Found {} maatIds from migration database", allMaatIds.size());
+        final var maatIds = MAX_COUNT_MAAT_IDS < 0 ? allMaatIds : allMaatIds.subList(0, Math.min(MAX_COUNT_MAAT_IDS, allMaatIds.size()));
+        log.info("Truncating to {} maatIds to be processed", maatIds.size());
 
         final var foundConcors = new HashSet<CaseMigration>();
         final var missingConcors = new TreeSet<Long>();
