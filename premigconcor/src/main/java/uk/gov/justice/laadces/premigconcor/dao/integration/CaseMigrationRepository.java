@@ -1,6 +1,5 @@
 package uk.gov.justice.laadces.premigconcor.dao.integration;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -15,7 +14,6 @@ import java.util.Collection;
 import java.util.List;
 
 @Repository
-@Slf4j
 public class CaseMigrationRepository {
     private static final int BATCH_SIZE = 990;
     private final NamedParameterJdbcTemplate integration;
@@ -24,7 +22,7 @@ public class CaseMigrationRepository {
         this.integration = integration;
     }
 
-    public void deleteUnprocessed(final List<Long> maatIds) {
+    public int deleteUnprocessed(final List<Long> maatIds) {
         final var partitions = partition(maatIds, BATCH_SIZE);
         final var batchArgs = partitions.stream()
                 .map(partition -> new MapSqlParameterSource("maatIds", partition))
@@ -35,7 +33,7 @@ public class CaseMigrationRepository {
                 WHERE is_processed <> TRUE
                 AND maat_id IN (:maatIds)
                 """, batchArgs);
-        log.info("deleteUnprocessed: Deleted {} rows", Arrays.stream(rowsDeleted).sum());
+        return Arrays.stream(rowsDeleted).sum(); // total number of deleted rows.
     }
 
     /**
@@ -56,30 +54,51 @@ public class CaseMigrationRepository {
         for (int index = 0; index < inputSize; index += partitionSize) {
             output.add(input.subList(index, Math.min(index + partitionSize, inputSize)));
         }
-        return output;
+        return output; // the list of lists (each of size partitionSize).
     }
 
-    public void removeExisting(final Collection<CaseMigration> caseMigrations) {
-        final int originalSize = caseMigrations.size();
-        final var counts = new Object() { // need to be 'effectively final' to access from lambda.
-            int total = 0;
-            int removed = 0;
-        };
+    public int[] removeExisting(final Collection<CaseMigration> caseMigrations) {
+        final int[] counts = {0, 0}; // {total, removed}
         integration.query("""
                 SELECT maat_id, concor_contribution_id, fdc_id
                 FROM case_migration
                 """, rs -> {
             final var caseMigration = CaseMigration.ofPrimaryKey(rs.getLong(1), rs.getLong(2), rs.getLong(3));
-            ++counts.total;
+            ++counts[0];
             if (caseMigrations.remove(caseMigration)) {
-                ++counts.removed;
+                ++counts[1];
             }
         });
-        log.info("Removed {} of {} original case-migrations", counts.removed, originalSize);
-        log.info("Remaining {} case-migrations are distinct from the {} already in the database", caseMigrations.size(), counts.total);
+        return counts; // size of case_migration table, duplicates between caseMigrations parameter and database table.
     }
 
-    public void saveAll(final Collection<CaseMigration> caseMigrations) {
+    private static final long CONCOR_BATCH_ID_DIVISOR = 250L; // case_migration batch_id size for concor_contributions
+    private static final long FDC_BATCH_ID_DIVISOR = 500L; // case_migration batch_id size for fdc_contributions
+
+    /**
+     * Returns a copy of the input where any CaseMigration without a batch_id is given a batch_id.
+     *
+     * @param caseMigrations input list of CaseMigration instances which may have null batch_ids.
+     * @return List&lt;CaseMigration&gt; where each instance has a non-null batch_id.
+     */
+    public List<CaseMigration> renumberBatchIds(Collection<CaseMigration> caseMigrations) {
+        final int[] counts = {0, 0}; // {concors, fdcs}
+        final var renumbered = new ArrayList<CaseMigration>(caseMigrations.size());
+        caseMigrations.forEach(caseMigration -> {
+            if (caseMigration.batchId() != null) {
+                renumbered.add(caseMigration); // has a batch_id already.
+            } else {
+                if (caseMigration.concorContributionId() > 0) {
+                    renumbered.add(caseMigration.withBatchId((counts[0]++) / CONCOR_BATCH_ID_DIVISOR));
+                } else {
+                    renumbered.add(caseMigration.withBatchId((counts[1]++) / FDC_BATCH_ID_DIVISOR));
+                }
+            }
+        });
+        return renumbered; // the copied collection.
+    }
+
+    public int saveAll(final Collection<CaseMigration> caseMigrations) {
         final int[][] rowsInserted = integration.getJdbcOperations().batchUpdate("""
                 INSERT INTO case_migration (maat_id, record_type, concor_contribution_id, fdc_id,
                                             batch_id, is_processed, processed_date, http_status, payload)
@@ -120,6 +139,6 @@ public class CaseMigrationRepository {
                 stmt.setNull(9, Types.VARCHAR);
             }
         });
-        log.info("saveAll: Inserted {} rows", Arrays.stream(rowsInserted).flatMapToInt(Arrays::stream).sum());
+        return Arrays.stream(rowsInserted).flatMapToInt(Arrays::stream).sum(); // total number of inserted rows.
     }
 }

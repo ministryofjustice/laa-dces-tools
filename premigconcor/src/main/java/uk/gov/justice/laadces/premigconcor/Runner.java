@@ -14,6 +14,7 @@ import uk.gov.justice.laadces.premigconcor.dao.migration.MaatId;
 import uk.gov.justice.laadces.premigconcor.dao.migration.MigrationScopeRepository;
 import uk.gov.justice.laadces.premigconcor.service.CsvOutputService;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.TreeSet;
 
@@ -26,11 +27,13 @@ import java.util.TreeSet;
 @Slf4j
 class Runner implements ApplicationRunner {
     // File paths to write CSV output to (for validation).
-    private static final String PATH_CSV_OUTPUT_FOUND_CONCOR = "./premigconcor-concorCases.csv";
-    private static final String PATH_CSV_OUTPUT_MISSING_CONCOR = "./premigconcor-concorMissing.csv";
-    private static final String PATH_CSV_OUTPUT_FOUND_FDC = "./premigconcor-fdcCases.csv";
-    private static final String PATH_CSV_OUTPUT_MISSING_FDC = "./premigconcor-fdcMissing.csv";
-    private static final int MAX_COUNT_MAAT_IDS = 5000; // truncate data set if non-negative.
+    private static final String PREFIX = "./" + LocalDate.now() + "_premigconcor-";
+    private static final String PATH_CSV_OUTPUT_FOUND_CONCOR = PREFIX + "concorCases.csv";
+    private static final String PATH_CSV_OUTPUT_MISSING_CONCOR = PREFIX + "concorMissing.csv";
+    private static final String PATH_CSV_OUTPUT_FOUND_FDC = PREFIX + "fdcCases.csv";
+    private static final String PATH_CSV_OUTPUT_MISSING_FDC = PREFIX + "fdcMissing.csv";
+    private static final String PATH_CSV_OUTPUT_SAVED_CM = PREFIX + "saved.csv";
+    private static final int MAX_COUNT_MAAT_IDS = -1; // Use full data if negative, truncated data if non-negative.
 
     private final MigrationScopeRepository migrationScopeRepository;
     private final ConcorContributionRepository concorContributionRepository;
@@ -61,16 +64,21 @@ class Runner implements ApplicationRunner {
         csvOutputService.writeMaatIds(PATH_CSV_OUTPUT_MISSING_FDC, MaatId.of(missingFdcs));
 
         log.info("Checking {} maatIds for unprocessed case-migrations", maatIds.size());
-        caseMigrationRepository.deleteUnprocessed(maatIds);
+        final int deleted = caseMigrationRepository.deleteUnprocessed(maatIds);
+        log.info("Deleted {} unprocessed case_migration rows from integration database", deleted);
 
         final var found = new HashSet<CaseMigration>();
         found.addAll(foundConcors);
         found.addAll(foundFdcs);
         log.info("Checking {} case-migrations for existing duplicates", found.size());
-        caseMigrationRepository.removeExisting(found);
+        final int[] removed = caseMigrationRepository.removeExisting(found);
+        log.info("Left {} case-migrations (removed {} dups of {} case_migration rows)", found.size(), removed[1], removed[0]);
 
-        log.info("Persisting {} non-duplicate case-migrations", found.size());
-        caseMigrationRepository.saveAll(found);
+        final var renumbered = caseMigrationRepository.renumberBatchIds(found);
+        log.info("Renumbered {} case-migrations", renumbered.size());
+        csvOutputService.writeCaseMigrations(PATH_CSV_OUTPUT_SAVED_CM, renumbered);
+        final int saved = caseMigrationRepository.saveAll(renumbered);
+        log.info("Saved {} case_migration rows to the integration database", saved);
 
         log.info("Exiting run...");
     }
