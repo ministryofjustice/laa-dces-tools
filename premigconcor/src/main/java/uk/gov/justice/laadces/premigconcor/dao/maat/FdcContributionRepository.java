@@ -13,7 +13,6 @@ import java.util.TreeSet;
 @Repository
 public class FdcContributionRepository {
     private static final int MAATDB_BATCH_QUERY_SIZE = 990; // fdc_contributions query batch size
-    private static final long INTDB_BATCH_ID_DIVISOR = 500L; // case_migration batch_id size
     private final JdbcClient maat;
 
     public FdcContributionRepository(@Qualifier("maatJdbcClient") final JdbcClient maat) {
@@ -22,7 +21,6 @@ public class FdcContributionRepository {
 
     public void addLatestIdsByMaatIds(final List<Long> maatIds, final Collection<CaseMigration> foundFdcs, final Collection<Long> missingFdcs) {
         final int count = maatIds.size();
-        final long[] batchIndex = {0L}; // Needs to be "effectively final".
         for (int i = 0; i < count; i += MAATDB_BATCH_QUERY_SIZE) {
             final var subList = maatIds.subList(i, Math.min(count, i + MAATDB_BATCH_QUERY_SIZE));
             final var paramSource = new MapSqlParameterSource("maatIds", subList);
@@ -38,7 +36,7 @@ public class FdcContributionRepository {
                         final long fdcId = rs.getLong(1);
                         final long maatId = rs.getLong(2);
                         set.remove(maatId);
-                        return CaseMigration.ofFdcContribution(maatId, fdcId, (batchIndex[0]++) / INTDB_BATCH_ID_DIVISOR);
+                        return CaseMigration.ofFdcContribution(maatId, fdcId, null);
                     })
                     .list());
             if (!set.isEmpty()) {

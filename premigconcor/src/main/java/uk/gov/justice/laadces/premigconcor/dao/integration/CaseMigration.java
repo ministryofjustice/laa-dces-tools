@@ -25,6 +25,10 @@ public record CaseMigration(long maatId                 /* required */,
         return new CaseMigration(maatId, concorContributionId != 0 ? "Contribution" : "Fdc", concorContributionId, fdcId, null, null, null, null, null);
     }
 
+    public CaseMigration withBatchId(long batchId) {
+        return new CaseMigration(maatId(), recordType(), concorContributionId(), fdcId(), batchId, isProcessed(), processedDate(), httpStatus(), payload());
+    }
+
     /**
      * Implementation of equals() that ignores every record component except (maatId, concorContributionId, fdcId),
      * which is the primary key in the table. Annoying as one reason to use records was to avoid writing this.

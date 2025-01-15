@@ -13,7 +13,6 @@ import java.util.TreeSet;
 @Repository
 public class ConcorContributionRepository {
     private static final int MAATDB_BATCH_QUERY_SIZE = 990; // concor_contributions query batch size
-    private static final long INTDB_BATCH_ID_DIVISOR = 250L; // case_migration batch_id size
     private final JdbcClient maat;
 
     public ConcorContributionRepository(@Qualifier("maatJdbcClient") final JdbcClient maat) {
@@ -22,7 +21,6 @@ public class ConcorContributionRepository {
 
     public void addLatestIdsByMaatIds(final List<Long> maatIds, final Collection<CaseMigration> foundConcors, final Collection<Long> missingConcors) {
         final int count = maatIds.size();
-        final long[] batchIndex = {0L}; // Needs to be "effectively final".
         for (int i = 0; i < count; i += MAATDB_BATCH_QUERY_SIZE) {
             final var subList = maatIds.subList(i, Math.min(count, i + MAATDB_BATCH_QUERY_SIZE));
             final var paramSource = new MapSqlParameterSource("maatIds", subList);
@@ -38,7 +36,7 @@ public class ConcorContributionRepository {
                         final long concorContributionId = rs.getLong(1);
                         final long maatId = rs.getLong(2);
                         set.remove(maatId);
-                        return CaseMigration.ofConcorContribution(maatId, concorContributionId, (batchIndex[0]++) / INTDB_BATCH_ID_DIVISOR);
+                        return CaseMigration.ofConcorContribution(maatId, concorContributionId, null);
                     })
                     .list());
             if (!set.isEmpty()) {
