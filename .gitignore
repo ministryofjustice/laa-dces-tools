@@ -22,6 +22,8 @@
 !**/src/main/**/*.log
 !**/src/test/**/*.log
 
+*_premigconcor-*.csv
+
 ### Exclude .run run configurations - may contain confidential env-vars.
 .run/
 

@@ -64,9 +64,9 @@ public class CaseMigrationRepository {
                 FROM case_migration
                 """, rs -> {
             final var caseMigration = CaseMigration.ofPrimaryKey(rs.getLong(1), rs.getLong(2), rs.getLong(3));
-            ++counts[0];
+            ++counts[0]; // total
             if (caseMigrations.remove(caseMigration)) {
-                ++counts[1];
+                ++counts[1]; // removed
             }
         });
         return counts; // size of case_migration table, duplicates between caseMigrations parameter and database table.
@@ -89,9 +89,9 @@ public class CaseMigrationRepository {
                 renumbered.add(caseMigration); // has a batch_id already.
             } else {
                 if (caseMigration.concorContributionId() > 0) {
-                    renumbered.add(caseMigration.withBatchId((counts[0]++) / CONCOR_BATCH_ID_DIVISOR));
+                    renumbered.add(caseMigration.withBatchId((counts[0]++) / CONCOR_BATCH_ID_DIVISOR)); // concors
                 } else {
-                    renumbered.add(caseMigration.withBatchId((counts[1]++) / FDC_BATCH_ID_DIVISOR));
+                    renumbered.add(caseMigration.withBatchId((counts[1]++) / FDC_BATCH_ID_DIVISOR)); // fdcs
                 }
             }
         });

@@ -28,7 +28,7 @@ public class FdcContributionRepository {
             foundFdcs.addAll(maat.sql("""
                         SELECT MAX(id), rep_id
                         FROM togdata.fdc_contributions
-                        WHERE rep_id IN (:maatIds)
+                        WHERE rep_id IN (:maatIds) AND status = 'SENT'
                         GROUP BY rep_id
                         """)
                     .paramSource(paramSource)
