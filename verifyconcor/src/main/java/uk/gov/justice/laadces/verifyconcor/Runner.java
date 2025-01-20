@@ -37,9 +37,10 @@ class Runner implements ApplicationRunner {
     private final XMLComparisonService xmlComparisonService;
     private final XMLTransformService xmlTransformService;
 
-    private static final long LOW_ID = 298_739_928L; // First rec of 2020
+    private static final long LOW_ID = 0L;
     private static final long HIGH_ID = 499_999_999L;
     private static final int BATCH_SIZE = 1000;
+    private static final String STATUS_SENT = "SENT";
 
     /**
      * Main runner method, just iterates over the database table, calling #examineConcorContribution() for each row.
@@ -50,7 +51,9 @@ class Runner implements ApplicationRunner {
      */
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        final int recs = concorRepository.countByIdBetween(LOW_ID, HIGH_ID);
+        //final int recs = concorRepository.countByIdBetween(LOW_ID, HIGH_ID);
+        final int recs = concorRepository.countByStatusAndIdBetween(STATUS_SENT, LOW_ID, HIGH_ID);
+        //final int recs = ConcorContributionIds.list.size();
         log.info("There are {} rows with {} <= id <= {}", recs, LOW_ID, HIGH_ID);
         log.info("-----BEGIN-----");
         final long startTime = System.currentTimeMillis();
@@ -63,7 +66,9 @@ class Runner implements ApplicationRunner {
         long sliceLowId, sliceHighId;
 
         do {
-            slice = concorRepository.findByIdBetweenOrderById(nextLowId, HIGH_ID, Pageable.ofSize(BATCH_SIZE));
+            //slice = concorRepository.findByIdBetweenOrderById(nextLowId, HIGH_ID, Pageable.ofSize(BATCH_SIZE));
+            slice = concorRepository.findByStatusAndIdBetweenOrderById(STATUS_SENT, nextLowId, HIGH_ID, Pageable.ofSize(BATCH_SIZE));
+            //slice = concorRepository.findByIdInOrderById(ConcorContributionIds.list, Pageable.ofSize(BATCH_SIZE));
             content = slice.getContent();
             contentLen = content.size();
             recsLoaded += contentLen;
@@ -108,7 +113,7 @@ class Runner implements ApplicationRunner {
             // Validate transformed JSON against JSON schema.
             var violations = jsonValidationService.validateJSON(json);
             if (!violations.isEmpty()) {
-                log.warn("id = {}, json violations = {}", id, violations);
+                //log.warn("id = {}, json violations = {}", id, violations);
                 anomalyRepository.addViolation(id, violations);
             }
             // Transform JSON -> DTO
@@ -118,9 +123,12 @@ class Runner implements ApplicationRunner {
             // Compare transformed XML against original XML.
             var diffs = xmlComparisonService.compareXML(xmlOriginal, xmlTransformed);
             if (!diffs.isEmpty()) {
-                log.warn("id = {}, xml diffs = {}", id, diffs);
+                //log.warn("id = {}, xml diffs = {}", id, diffs);
                 anomalyRepository.addDiff(id, diffs);
             }
+            //if (violations.isEmpty() && diffs.isEmpty()) {
+            //    log.info("id = {}, no json violations and no xml diffs", id);
+            //}
         } catch (Exception e) {
             log.error("Exception thrown", e);
         }
