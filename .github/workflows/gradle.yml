@@ -19,7 +19,7 @@ jobs:
         with:
           java-version: "17"
           distribution: "corretto"
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
       - name: deltaconcor
         run: |
           cd deltaconcor
